@@ -70,7 +70,7 @@ export default function Header() {
           }}
           aria-label="VeriLex Beranda"
         >
-          <BookOpen size={20} color="var(--navy)" strokeWidth={2} />
+          <img src="/verilex-logo.png" alt="VeriLex Logo" style={{ height: '28px', width: 'auto', borderRadius: '4px' }} />
           VeriLex
           <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--steel-muted)', border: '1px solid #EAECF0', padding: '0.125rem 0.375rem', borderRadius: '2px', fontFamily: 'var(--font-body)' }} className="hidden sm:inline-block">
             Ensiklopedia

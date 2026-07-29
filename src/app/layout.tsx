@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     siteName: "VeriLex",
   },
   icons: {
-    icon: "/favicon.svg",
+    icon: "/verilex-logo.png",
   },
 };
 

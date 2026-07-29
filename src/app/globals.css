@@ -447,3 +447,22 @@ p {
   }
 }
 
+/* ── Loading Page Pulse Animation ────────────────── */
+@keyframes pulse-logo {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.95;
+    box-shadow: 0 4px 20px rgba(15, 27, 60, 0.1);
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.75;
+    box-shadow: 0 10px 30px rgba(15, 27, 60, 0.25);
+  }
+}
+
+.pulse-logo {
+  animation: pulse-logo 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+
