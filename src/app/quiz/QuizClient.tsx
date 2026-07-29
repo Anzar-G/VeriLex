@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Trophy, ArrowRight } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Trophy, ArrowRight, HelpCircle, GraduationCap } from 'lucide-react';
 import { mockQuizQuestions } from '@/data/mockData';
 import type { QuizQuestion } from '@/types';
 
@@ -16,8 +16,6 @@ export default function QuizClient() {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
 
   const startQuiz = () => {
-    // In a real app, this might fetch from an API or randomize
-    // For now, take first 5 questions
     setQuestions([...mockQuizQuestions].sort(() => 0.5 - Math.random()).slice(0, 5));
     setStarted(true);
     setCurrentQuestionIndex(0);
@@ -53,17 +51,47 @@ export default function QuizClient() {
 
   if (!started) {
     return (
-      <main style={{ minHeight: 'calc(100vh - 64px - 300px)', padding: '4rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--cream)' }}>
-        <div style={{ maxWidth: '600px', width: '100%', backgroundColor: 'white', padding: '3rem', borderRadius: '0.5rem', border: '1px solid var(--divider)', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-          <Trophy size={48} style={{ color: 'var(--bronze)', margin: '0 auto 1.5rem' }} />
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '2rem', color: 'var(--navy)', marginBottom: '1rem' }}>
-            Quiz Maksim Hukum
+      <main style={{ minHeight: 'calc(100vh - 60px)', padding: '3rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8F9FA' }}>
+        <div 
+          style={{ 
+            maxWidth: '600px', 
+            width: '100%', 
+            backgroundColor: '#FFFFFF', 
+            padding: '2.5rem 2rem', 
+            borderRadius: '4px', 
+            border: '1px solid #A2A9B1', 
+            textAlign: 'center', 
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          {/* Subtle top decoration bar */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', backgroundColor: 'var(--navy)' }} />
+
+          <div style={{ display: 'inline-flex', padding: '1rem', backgroundColor: 'rgba(15, 27, 60, 0.05)', borderRadius: '50%', marginBottom: '1.5rem' }}>
+            <GraduationCap size={44} color="var(--navy)" />
+          </div>
+          
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.875rem', color: 'var(--navy)', marginBottom: '0.75rem', border: 'none', padding: 0 }}>
+            Uji Kompetensi Maksim Hukum
           </h1>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '1.0625rem', color: 'var(--steel)', lineHeight: 1.6, marginBottom: '2.5rem' }}>
-            Uji pemahaman Anda tentang maksim hukum Latin. Quiz ini terdiri dari 5 pertanyaan acak untuk mengukur tingkat pengetahuan Anda.
+          
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', color: 'var(--steel-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>
+            Uji pemahaman akademis Anda mengenai asas-asas hukum Latin paling krusial yang berlaku di Indonesia. 
+            Setiap sesi berisi <strong>5 pertanyaan acak</strong> dengan pembahasan mendalam.
           </p>
-          <button onClick={startQuiz} className="btn-primary" style={{ padding: '0.75rem 2rem', fontSize: '1rem' }}>
-            Mulai Quiz Sekarang
+
+          {/* Interactive Info Box */}
+          <div style={{ backgroundColor: '#FAF8F3', border: '1px solid #D4A574', padding: '1rem', borderRadius: '2px', textAlign: 'left', marginBottom: '2rem', fontSize: '0.8125rem', color: '#54595D', lineHeight: 1.5 }}>
+            <strong style={{ color: 'var(--navy)', display: 'block', marginBottom: '0.25rem' }}>Aturan Kuis:</strong>
+            - Pilihan ganda dengan 4 opsi jawaban.<br />
+            - Pembahasan artikel lengkap muncul langsung setelah Anda menjawab setiap soal.<br />
+            - Tidak ada batasan waktu, bacalah soal dengan teliti.
+          </div>
+
+          <button onClick={startQuiz} className="btn-primary" style={{ padding: '0.75rem 2.5rem', fontSize: '0.9375rem', width: '100%', justifyContent: 'center' }}>
+            Mulai Kuis Sekarang
           </button>
         </div>
       </main>
@@ -73,50 +101,45 @@ export default function QuizClient() {
   if (showResults) {
     const percentage = Math.round((score / questions.length) * 100);
     let message = '';
-    if (percentage === 100) message = 'Luar biasa! Penguasaan Anda sempurna.';
-    else if (percentage >= 80) message = 'Sangat baik! Anda memahami sebagian besar maksim.';
-    else if (percentage >= 60) message = 'Cukup baik, tetapi masih perlu sedikit latihan.';
-    else message = 'Jangan menyerah, mari belajar lebih giat lagi melalui fitur Flashcard.';
+    if (percentage === 100) message = 'Luar biasa! Pemahaman akademis Anda tentang maksim hukum sangat sempurna.';
+    else if (percentage >= 80) message = 'Sangat baik! Anda menguasai sebagian besar asas hukum dengan tepat.';
+    else if (percentage >= 60) message = 'Cukup baik, tetapi masih perlu menelaah ulang beberapa yurisprudensi.';
+    else message = 'Pemahaman Anda masih perlu ditingkatkan. Kami menyarankan untuk mempelajari kembali menggunakan modul Flashcard SRA.';
 
     return (
-      <main style={{ minHeight: 'calc(100vh - 64px - 300px)', padding: '4rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--cream)' }}>
-        <div style={{ maxWidth: '600px', width: '100%', backgroundColor: 'white', padding: '3rem', borderRadius: '0.5rem', border: '1px solid var(--divider)', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+      <main style={{ minHeight: 'calc(100vh - 60px)', padding: '3rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8F9FA' }}>
+        <div style={{ maxWidth: '600px', width: '100%', backgroundColor: '#FFFFFF', padding: '2.5rem 2rem', borderRadius: '4px', border: '1px solid #A2A9B1', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', backgroundColor: percentage >= 60 ? 'var(--success)' : 'var(--error)' }} />
+          
           <div style={{ 
-            width: '120px', 
-            height: '120px', 
+            width: '100px', 
+            height: '100px', 
             borderRadius: '50%', 
-            backgroundColor: percentage >= 80 ? 'rgba(34,197,94,0.1)' : percentage >= 60 ? 'rgba(166,124,82,0.1)' : 'rgba(239,68,68,0.1)',
+            backgroundColor: percentage >= 80 ? 'rgba(107,142,113,0.1)' : percentage >= 60 ? 'rgba(212,165,116,0.1)' : 'rgba(200,90,84,0.1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 1.5rem'
           }}>
-            <span style={{ 
-              fontFamily: 'var(--font-display)', 
-              fontWeight: 700, 
-              fontSize: '2.5rem', 
-              color: percentage >= 80 ? '#15803d' : percentage >= 60 ? 'var(--bronze)' : '#b91c1c'
-            }}>
-              {percentage}%
-            </span>
+            <Trophy size={38} color={percentage >= 80 ? 'var(--success)' : percentage >= 60 ? 'var(--warning)' : 'var(--error)'} />
           </div>
           
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.75rem', color: 'var(--navy)', marginBottom: '0.5rem' }}>
-            Hasil Quiz Anda
+          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.625rem', color: 'var(--navy)', marginBottom: '0.5rem', border: 'none', padding: 0 }}>
+            Hasil Evaluasi Kuis
           </h2>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '1.0625rem', color: 'var(--steel)', marginBottom: '1rem' }}>
-            Anda menjawab {score} dari {questions.length} pertanyaan dengan benar.
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '1.0625rem', color: 'var(--steel)', fontWeight: 600, marginBottom: '0.5rem' }}>
+            Skor Anda: {score} / {questions.length} Benar ({percentage}%)
           </p>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', color: 'var(--text-meta)', marginBottom: '2.5rem' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: 'var(--steel-muted)', lineHeight: 1.6, marginBottom: '2.5rem' }}>
             {message}
           </p>
           
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button onClick={startQuiz} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <RefreshCw size={18} /> Coba Lagi
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={startQuiz} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
+              <RefreshCw size={15} /> Kuis Baru
             </button>
-            <Link href="/dashboard" className="btn-secondary">
-              Lihat Dashboard Progres
+            <Link href="/" className="btn-secondary" style={{ fontSize: '0.875rem' }}>
+              Kembali ke Beranda
             </Link>
           </div>
         </div>
@@ -127,11 +150,11 @@ export default function QuizClient() {
   const currentQ = questions[currentQuestionIndex];
 
   return (
-    <main style={{ minHeight: 'calc(100vh - 64px - 300px)', padding: '2rem 1rem', backgroundColor: 'var(--cream)' }}>
+    <main style={{ minHeight: 'calc(100vh - 60px)', padding: '2rem 1rem', backgroundColor: '#F8F9FA' }}>
       <div className="container-page" style={{ maxWidth: '720px' }}>
         
         {/* Header / Progress */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <button 
             onClick={() => setStarted(false)}
             style={{ 
@@ -142,72 +165,75 @@ export default function QuizClient() {
               alignItems: 'center', 
               gap: '0.5rem',
               fontFamily: 'var(--font-body)',
-              fontSize: '0.875rem',
-              cursor: 'pointer'
+              fontSize: '0.8125rem',
+              cursor: 'pointer',
+              padding: 0
             }}
+            aria-label="Kembali ke layar mulai kuis"
           >
-            <ArrowLeft size={16} /> Keluar Quiz
+            <ArrowLeft size={14} /> Keluar Kuis
           </button>
           
-          <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '0.875rem', color: 'var(--navy)' }}>
-            Pertanyaan {currentQuestionIndex + 1} dari {questions.length}
+          <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.8125rem', color: 'var(--navy)' }}>
+            SOAL {currentQuestionIndex + 1} DARI {questions.length}
           </span>
         </div>
 
         {/* Progress Bar */}
-        <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--divider)', borderRadius: '3px', marginBottom: '2.5rem', overflow: 'hidden' }}>
+        <div style={{ width: '100%', height: '4px', backgroundColor: 'var(--divider)', borderRadius: '2px', marginBottom: '2rem', overflow: 'hidden' }}>
           <div style={{ 
             height: '100%', 
-            backgroundColor: 'var(--bronze)', 
-            width: `${((currentQuestionIndex) / questions.length) * 100}%`,
+            backgroundColor: 'var(--navy)', 
+            width: `${((currentQuestionIndex + (isAnswered ? 1 : 0)) / questions.length) * 100}%`,
             transition: 'width 300ms ease'
           }} />
         </div>
 
         {/* Question Area */}
-        <div style={{ backgroundColor: 'white', padding: '2.5rem', borderRadius: '0.5rem', border: '1px solid var(--divider)', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', marginBottom: '1.5rem' }}>
+        <div style={{ backgroundColor: 'white', padding: '2rem 1.5rem', borderRadius: '2px', border: '1px solid #A2A9B1', boxShadow: '0 2px 6px rgba(0,0,0,0.03)', marginBottom: '1.5rem' }}>
           <span style={{ 
             display: 'inline-block', 
-            padding: '0.25rem 0.75rem', 
-            backgroundColor: 'rgba(15,27,60,0.05)', 
-            color: 'var(--navy)', 
-            borderRadius: '999px', 
+            padding: '0.125rem 0.5rem', 
+            backgroundColor: '#EAECF0', 
+            color: 'var(--steel-muted)', 
+            borderRadius: '2px', 
             fontFamily: 'var(--font-body)', 
-            fontSize: '0.75rem', 
-            fontWeight: 600,
+            fontSize: '0.6875rem', 
+            fontWeight: 700,
             textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            marginBottom: '1rem'
+            letterSpacing: '0.08em',
+            marginBottom: '0.875rem',
+            border: '1px solid #D1D5DB'
           }}>
-            {currentQ.legalField}
+            {currentQ.legalField.toUpperCase()}
           </span>
           
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.5rem', color: 'var(--navy)', lineHeight: 1.4, marginBottom: '2rem' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.375rem', color: '#000', lineHeight: 1.4, marginBottom: '1.5rem', border: 'none', padding: 0 }} className="text-wrap-safe">
             {currentQ.question}
           </h2>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             {currentQ.options.map((option, idx) => {
               const isSelected = selectedOption === idx;
               const isCorrect = idx === currentQ.correctIndex;
               
-              let bgColor = 'white';
-              let borderColor = 'var(--divider)';
+              let bgColor = '#FFFFFF';
+              let borderColor = '#A2A9B1';
               let icon = null;
               
               if (isAnswered) {
                 if (isCorrect) {
-                  bgColor = 'rgba(34,197,94,0.05)';
-                  borderColor = '#22c55e';
-                  icon = <CheckCircle2 size={18} color="#22c55e" />;
+                  bgColor = 'rgba(107, 142, 113, 0.08)';
+                  borderColor = 'var(--success)';
+                  icon = <CheckCircle2 size={18} color="var(--success)" />;
                 } else if (isSelected && !isCorrect) {
-                  bgColor = 'rgba(239,68,68,0.05)';
-                  borderColor = '#ef4444';
-                  icon = <XCircle size={18} color="#ef4444" />;
+                  bgColor = 'rgba(200, 90, 84, 0.08)';
+                  borderColor = 'var(--error)';
+                  icon = <XCircle size={18} color="var(--error)" />;
                 }
               } else if (isSelected) {
-                bgColor = 'rgba(166,124,82,0.05)';
-                borderColor = 'var(--bronze)';
+                bgColor = 'rgba(15, 27, 60, 0.03)';
+                borderColor = 'var(--navy)';
               }
 
               return (
@@ -218,24 +244,25 @@ export default function QuizClient() {
                   style={{
                     width: '100%',
                     textAlign: 'left',
-                    padding: '1.25rem',
+                    padding: '1rem 1.25rem',
                     backgroundColor: bgColor,
-                    border: `2px solid ${borderColor}`,
-                    borderRadius: '0.5rem',
+                    border: `1px solid ${borderColor}`,
+                    borderRadius: '2px',
                     fontFamily: 'var(--font-body)',
-                    fontSize: '1rem',
-                    color: 'var(--navy)',
+                    fontSize: '0.875rem',
+                    color: '#202122',
                     cursor: isAnswered ? 'default' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    transition: 'all 200ms'
+                    transition: 'all 150ms'
                   }}
+                  aria-label={`Opsi ${String.fromCharCode(65 + idx)}: ${option}`}
                 >
-                  <span>
-                    <span style={{ display: 'inline-block', width: '24px', fontWeight: 600, color: isAnswered ? 'inherit' : 'var(--steel)' }}>
-                      {String.fromCharCode(65 + idx)}.
-                    </span>
+                  <span style={{ paddingRight: '1rem', lineHeight: 1.4 }} className="text-wrap-safe">
+                    <strong style={{ display: 'inline-block', width: '20px', color: 'var(--navy)' }}>
+                      {String.fromCharCode(65 + idx)}
+                    </strong>
                     {option}
                   </span>
                   {icon}
@@ -247,16 +274,18 @@ export default function QuizClient() {
           {/* Explanation Box */}
           {isAnswered && (
             <div style={{ 
-              marginTop: '2rem', 
-              padding: '1.5rem', 
-              backgroundColor: 'rgba(15,27,60,0.03)', 
-              borderRadius: '0.5rem',
-              borderLeft: '4px solid var(--bronze)'
+              marginTop: '1.5rem', 
+              padding: '1.25rem', 
+              backgroundColor: '#FAF8F3', 
+              borderRadius: '2px',
+              borderLeft: '3px solid var(--bronze)',
+              border: '1px solid #E2E8F0',
+              borderLeftColor: 'var(--bronze)'
             }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.125rem', color: 'var(--navy)', marginBottom: '0.5rem' }}>
-                Penjelasan
+              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9375rem', color: 'var(--navy)', margin: '0 0 0.375rem', border: 'none', padding: 0 }}>
+                Pembahasan Analisis:
               </h3>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', color: 'var(--steel)', lineHeight: 1.6 }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: '#54595D', lineHeight: 1.6 }} className="text-wrap-safe">
                 {currentQ.explanation}
               </p>
               <Link 
@@ -265,16 +294,16 @@ export default function QuizClient() {
                 style={{ 
                   display: 'inline-flex', 
                   alignItems: 'center', 
-                  gap: '0.375rem', 
-                  marginTop: '1rem', 
+                  gap: '0.25rem', 
+                  marginTop: '0.75rem', 
                   fontFamily: 'var(--font-body)', 
                   fontWeight: 600, 
-                  fontSize: '0.875rem', 
-                  color: 'var(--bronze)', 
+                  fontSize: '0.8125rem', 
+                  color: 'var(--wiki-blue)', 
                   textDecoration: 'none' 
                 }}
               >
-                Pelajari maksim ini lebih lanjut <ArrowRight size={14} />
+                Pelajari rujukan maksim asli <ArrowRight size={12} />
               </Link>
             </div>
           )}
@@ -287,17 +316,17 @@ export default function QuizClient() {
               onClick={handleSubmitAnswer}
               disabled={selectedOption === null}
               className={selectedOption === null ? "btn-secondary" : "btn-primary"}
-              style={{ opacity: selectedOption === null ? 0.5 : 1, cursor: selectedOption === null ? 'not-allowed' : 'pointer', padding: '0.75rem 2rem' }}
+              style={{ opacity: selectedOption === null ? 0.5 : 1, cursor: selectedOption === null ? 'not-allowed' : 'pointer', padding: '0.5rem 1.75rem', fontSize: '0.875rem' }}
             >
-              Jawab
+              Kirim Jawaban
             </button>
           ) : (
             <button 
               onClick={handleNextQuestion}
               className="btn-primary"
-              style={{ padding: '0.75rem 2rem' }}
+              style={{ padding: '0.5rem 1.75rem', fontSize: '0.875rem' }}
             >
-              {currentQuestionIndex < questions.length - 1 ? 'Pertanyaan Berikutnya' : 'Lihat Hasil'}
+              {currentQuestionIndex < questions.length - 1 ? 'Soal Selanjutnya' : 'Lihat Hasil Akhir'}
             </button>
           )}
         </div>

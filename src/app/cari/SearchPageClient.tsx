@@ -94,6 +94,7 @@ function SearchContent() {
               checked={selectedFields.includes(field.id)}
               onChange={() => toggleField(field.id)}
               style={{ accentColor: 'var(--navy)', width: '14px', height: '14px', cursor: 'pointer' }}
+              aria-label={`Filter Hukum ${fieldLabels[field.id]}`}
             />
             <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: '#202122', flex: 1 }}>
               {fieldLabels[field.id]}
@@ -117,6 +118,7 @@ function SearchContent() {
               checked={sortBy === option}
               onChange={() => setSortBy(option)}
               style={{ accentColor: 'var(--navy)', cursor: 'pointer' }}
+              aria-label={`Urutkan berdasarkan ${option}`}
             />
             <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: '#202122' }}>
               {option === 'relevansi' ? 'Relevansi' : option === 'abjad' ? 'Alfabetis (A–Z)' : 'Terbaru'}
@@ -140,9 +142,10 @@ function SearchContent() {
         {/* Search Bar */}
         <form onSubmit={handleSearch} role="search" style={{ marginBottom: '1.25rem' }}>
           <div style={{ position: 'relative', maxWidth: '640px' }}>
+            <label htmlFor="search-input-field" className="sr-only">Cari frase Latin atau arti Indonesia</label>
             <input
               type="search"
-              id="search-input"
+              id="search-input-field"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Cari frase Latin (Lex, Nullum...) atau arti Indonesia..."
@@ -156,6 +159,7 @@ function SearchContent() {
                 type="button"
                 onClick={() => { setInputValue(''); setQuery(''); }}
                 style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#72777D' }}
+                aria-label="Bersihkan pencarian"
               >
                 <X size={14} />
               </button>
@@ -168,6 +172,8 @@ function SearchContent() {
           <button
             onClick={() => setShowMobileFilter(!showMobileFilter)}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '0.4375rem 0.875rem', fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: '#202122', cursor: 'pointer', borderRadius: '2px' }}
+            aria-expanded={showMobileFilter}
+            aria-label="Tampilkan opsi filter dan urutkan"
           >
             <SlidersHorizontal size={14} />
             Filter &amp; Urutkan
@@ -184,7 +190,13 @@ function SearchContent() {
               <p style={{ fontWeight: 700, fontSize: '0.6875rem', color: '#54595D', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.625rem' }}>Bidang Hukum</p>
               {legalFields.map(field => (
                 <label key={field.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4375rem', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={selectedFields.includes(field.id)} onChange={() => toggleField(field.id)} style={{ accentColor: 'var(--navy)' }} />
+                  <input 
+                    type="checkbox" 
+                    checked={selectedFields.includes(field.id)} 
+                    onChange={() => toggleField(field.id)} 
+                    style={{ accentColor: 'var(--navy)' }} 
+                    aria-label={`Filter Hukum ${fieldLabels[field.id]} mobile`}
+                  />
                   <span style={{ fontSize: '0.875rem' }}>{fieldLabels[field.id]}</span>
                   <span style={{ fontSize: '0.75rem', color: '#72777D', marginLeft: 'auto' }}>{field.count}</span>
                 </label>
@@ -222,6 +234,7 @@ function SearchContent() {
                   key={f}
                   onClick={() => toggleField(f)}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', backgroundColor: '#EAECF0', border: '1px solid #A2A9B1', borderRadius: '2px', padding: '0.125rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer', color: '#202122' }}
+                  aria-label={`Hapus filter ${fieldLabels[f]}`}
                 >
                   {fieldLabels[f]} <X size={11} />
                 </button>

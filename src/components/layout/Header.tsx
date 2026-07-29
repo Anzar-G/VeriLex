@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Search, Menu, X, BookOpen, Star, HelpCircle } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Search, Menu, X, BookOpen, Star } from 'lucide-react';
 import { useVeriLexStore } from '@/lib/useStore';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { favorites } = useVeriLexStore();
+  const pathname = usePathname();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,6 +18,9 @@ export default function Header() {
       window.location.href = `/cari?q=${encodeURIComponent(searchQuery.trim())}`;
     }
   };
+
+  // Hide the header search bar on the homepage to avoid redundancy
+  const isHomepage = pathname === '/';
 
   return (
     <header
@@ -42,8 +47,8 @@ export default function Header() {
         <button
           className="lg:hidden"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          style={{ color: 'var(--navy)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
-          aria-label="Toggle navigation menu"
+          style={{ color: 'var(--navy)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', display: 'flex', alignItems: 'center' }}
+          aria-label="Buka menu navigasi"
         >
           {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
@@ -63,51 +68,61 @@ export default function Header() {
             alignItems: 'center',
             gap: '0.5rem',
           }}
+          aria-label="VeriLex Beranda"
         >
           <BookOpen size={20} color="var(--navy)" strokeWidth={2} />
           VeriLex
-          <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--steel-muted)', border: '1px solid #EAECF0', padding: '0.125rem 0.375rem', borderRadius: '2px', fontFamily: 'var(--font-body)' }}>
-            Ensiklopedia Maksim
+          <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--steel-muted)', border: '1px solid #EAECF0', padding: '0.125rem 0.375rem', borderRadius: '2px', fontFamily: 'var(--font-body)' }} className="hidden sm:inline-block">
+            Ensiklopedia
           </span>
         </Link>
 
-        {/* Search Bar */}
-        <form
-          onSubmit={handleSearchSubmit}
-          style={{ flex: 1, maxWidth: '520px' }}
-        >
-          <div style={{ position: 'relative', width: '100%' }}>
-            <input
-              type="search"
-              placeholder="Cari maksim (misal: Lex Posterior, Nullum Crimen...)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-text"
-              style={{
-                paddingRight: '2.5rem',
-                fontSize: '0.875rem',
-                backgroundColor: '#F8F9FA',
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                position: 'absolute',
-                right: '0.5rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                color: 'var(--navy)',
-                cursor: 'pointer',
-                padding: '0.25rem',
-              }}
-              aria-label="Search"
-            >
-              <Search size={16} />
-            </button>
-          </div>
-        </form>
+        {/* Search Bar - hidden on homepage */}
+        {!isHomepage && (
+          <form
+            onSubmit={handleSearchSubmit}
+            style={{ flex: 1, maxWidth: '420px' }}
+            role="search"
+          >
+            <div style={{ position: 'relative', width: '100%' }}>
+              <label htmlFor="header-search" className="sr-only">Cari maksim hukum</label>
+              <input
+                type="search"
+                id="header-search"
+                placeholder="Cari maksim..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-text"
+                style={{
+                  paddingRight: '2.5rem',
+                  fontSize: '0.875rem',
+                  backgroundColor: '#F8F9FA',
+                  height: '36px',
+                  paddingTop: 0,
+                  paddingBottom: 0,
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  position: 'absolute',
+                  right: '0.5rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--navy)',
+                  cursor: 'pointer',
+                  padding: '0.25rem',
+                  display: 'flex',
+                }}
+                aria-label="Kirim pencarian"
+              >
+                <Search size={15} />
+              </button>
+            </div>
+          </form>
+        )}
 
         {/* Spacer */}
         <div style={{ flex: 1 }} className="hidden lg:block" />
@@ -145,14 +160,18 @@ export default function Header() {
         </nav>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer (Responsive overlay slide-down) */}
       {mobileMenuOpen && (
         <div
           style={{
             backgroundColor: '#FFFFFF',
-            borderBottom: '1px solid #A2A9B1',
-            padding: '0.5rem 0',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            borderBottom: '2px solid var(--navy)',
+            position: 'absolute',
+            top: '60px',
+            left: 0,
+            right: 0,
+            boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+            zIndex: 99,
           }}
           className="lg:hidden"
         >
@@ -171,13 +190,16 @@ export default function Header() {
               href={item.href}
               style={{
                 display: 'block',
-                padding: '0.625rem 1.25rem',
-                color: 'var(--navy)',
+                padding: '0.75rem 1.5rem',
+                color: 'var(--steel)',
                 fontFamily: 'var(--font-body)',
-                fontSize: '0.875rem',
+                fontSize: '0.9375rem',
                 textDecoration: 'none',
                 borderBottom: '1px solid #EAECF0',
+                transition: 'background 100ms',
               }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#F8F9FA'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
               onClick={() => setMobileMenuOpen(false)}
             >
               {item.label}

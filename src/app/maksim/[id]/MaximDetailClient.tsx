@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Star, Volume2, BookMarked, Share2, Check, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Star, Volume2, BookMarked, Share2, Check, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Maxim } from '@/types';
 import { useVeriLexStore } from '@/lib/useStore';
 
@@ -32,12 +32,10 @@ const relationColors: Record<string, { bg: string; border: string; text: string 
 
 interface Props { maxim: Maxim; }
 
-// Thin horizontal rule matching Wikipedia article sections
 function WikiHR() {
   return <hr style={{ border: 'none', borderTop: '1px solid #A2A9B1', margin: '0 0 1rem' }} />;
 }
 
-// Section heading styled exactly like Wikipedia h2
 function SectionH2({ id, children }: { id: string; children: React.ReactNode }) {
   return (
     <h2 id={id} style={{
@@ -45,7 +43,7 @@ function SectionH2({ id, children }: { id: string; children: React.ReactNode }) 
       fontWeight: 700,
       fontSize: '1.375rem',
       color: '#000',
-      margin: '1.75rem 0 0.25rem',
+      margin: '1.75rem 0 0.5rem',
       paddingBottom: '0.25rem',
       borderBottom: '1px solid #A2A9B1',
     }}>
@@ -59,6 +57,7 @@ export default function MaximDetailClient({ maxim }: Props) {
   const isFav = favorites.includes(maxim.id);
   const [isPlaying, setIsPlaying] = useState(false);
   const [copied, setCopied]       = useState(false);
+  const [tocExpanded, setTocExpanded] = useState(true);
 
   const handleAudio = () => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -81,17 +80,40 @@ export default function MaximDetailClient({ maxim }: Props) {
     }
   };
 
+  // Structured Data (JSON-LD) for SEO
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    'mainEntityOfPage': {
+      '@type': 'WebPage',
+      '@id': `https://verilex.vercel.app/maksim/${maxim.id}`
+    },
+    'headline': `${maxim.latinPhrase} — Arti & Penjelasan Hukum`,
+    'description': maxim.indonesianMeaning,
+    'inLanguage': 'id',
+    'articleBody': maxim.legalMeaning,
+    'author': {
+      '@type': 'Organization',
+      'name': 'VeriLex Editorial'
+    }
+  };
+
   const paragraphs = (text: string) =>
     text.split('\n\n').filter(Boolean).map((p, i) => (
-      <p key={i} style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', lineHeight: 1.75, color: '#202122', marginBottom: '0.875rem' }}>
+      <p key={i} style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', lineHeight: 1.75, color: '#202122', marginBottom: '0.875rem' }} className="text-wrap-safe">
         {p.trim()}
       </p>
     ));
 
   return (
     <div style={{ backgroundColor: '#F8F9FA', minHeight: 'calc(100vh - 60px)' }}>
+      {/* Insert JSON-LD into the document */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      {/* ── Breadcrumb ─────────────────────────────────────────── */}
+      {/* ── Breadcrumb ── */}
       <div style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #EAECF0', padding: '0.5rem 0' }}>
         <div className="container-page" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
           <nav style={{ fontSize: '0.8125rem', color: '#54595D' }}>
@@ -99,7 +121,7 @@ export default function MaximDetailClient({ maxim }: Props) {
             {' '}&rsaquo;{' '}
             <Link href="/cari" className="wiki-link">Indeks Maksim</Link>
             {' '}&rsaquo;{' '}
-            <span style={{ color: '#202122', fontStyle: 'italic' }}>{maxim.latinPhrase}</span>
+            <span style={{ color: '#202122', fontStyle: 'italic' }} className="text-wrap-safe">{maxim.latinPhrase}</span>
           </nav>
 
           {/* Action Buttons */}
@@ -116,6 +138,7 @@ export default function MaximDetailClient({ maxim }: Props) {
                 color: isPlaying ? '#3366CC' : '#202122',
                 cursor: 'pointer', borderRadius: '2px',
               }}
+              aria-label="Putar pelafalan audio"
             >
               <Volume2 size={14} color={isPlaying ? '#3366CC' : undefined} />
               {isPlaying ? 'Memutar...' : 'Pelafalan'}
@@ -132,6 +155,7 @@ export default function MaximDetailClient({ maxim }: Props) {
                 color: isFav ? 'var(--bronze)' : '#202122',
                 cursor: 'pointer', borderRadius: '2px',
               }}
+              aria-label={isFav ? 'Hapus dari daftar favorit' : 'Tambahkan ke daftar favorit'}
             >
               <Star size={14} fill={isFav ? 'var(--bronze)' : 'none'} />
               {isFav ? 'Tersimpan' : 'Simpan'}
@@ -148,6 +172,7 @@ export default function MaximDetailClient({ maxim }: Props) {
                 color: copied ? '#6B8E71' : '#202122',
                 cursor: 'pointer', borderRadius: '2px',
               }}
+              aria-label="Bagikan artikel ini"
             >
               {copied ? <Check size={14} /> : <Share2 size={14} />}
               {copied ? 'Disalin!' : 'Bagikan'}
@@ -156,21 +181,17 @@ export default function MaximDetailClient({ maxim }: Props) {
         </div>
       </div>
 
-      {/* ── Article Container ────────────────────────────────── */}
+      {/* ── Article Container ── */}
       <div className="container-page" style={{ paddingTop: '1.5rem', paddingBottom: '3rem' }}>
-        <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '2rem 2.5rem', maxWidth: '960px', margin: '0 auto' }}>
+        <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.5rem 1.25rem', maxWidth: '960px', margin: '0 auto' }} className="sm:p-8">
 
-          {/* ── Wikipedia Infobox (floating right) ───────────── */}
+          {/* ── Wikipedia Infobox (floating right) ── */}
           <div style={{
-            float: 'right',
-            clear: 'right',
-            margin: '0 0 1.5rem 2rem',
-            width: '280px',
             border: '1px solid #A2A9B1',
             backgroundColor: '#F8F9FA',
             fontSize: '0.8125rem',
             fontFamily: 'var(--font-body)',
-          }}>
+          }} className="w-full sm:w-[280px] sm:float-right sm:clear-right sm:ml-6 sm:mb-6 mb-4">
             {/* Infobox header */}
             <div style={{
               backgroundColor: 'var(--navy)',
@@ -219,27 +240,27 @@ export default function MaximDetailClient({ maxim }: Props) {
             ))}
           </div>
 
-          {/* ── Article Title ─────────────────────────────────── */}
+          {/* ── Article Title ── */}
           <h1 style={{
             fontFamily: 'var(--font-display)',
             fontWeight: 700,
-            fontSize: '2rem',
+            fontSize: '1.75rem',
             color: '#000',
-            margin: '0 0 0.25rem',
+            margin: '0 0 0.5rem',
             lineHeight: 1.2,
             borderBottom: '1px solid #A2A9B1',
             paddingBottom: '0.375rem',
-          }}>
+          }} className="sm:text-3xl text-wrap-safe">
             {maxim.latinPhrase}
           </h1>
 
           {/* Italic lead sentence */}
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', color: '#54595D', fontStyle: 'italic', marginBottom: '1rem' }}>
-            {maxim.literalTranslation}
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', color: '#54595D', fontStyle: 'italic', marginBottom: '1rem' }} className="text-wrap-safe">
+            &ldquo;{maxim.literalTranslation}&rdquo;
           </p>
 
           {/* Opening paragraph */}
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', lineHeight: 1.75, color: '#202122', marginBottom: '1rem' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', lineHeight: 1.75, color: '#202122', marginBottom: '1rem' }} className="text-wrap-safe">
             <strong style={{ fontFamily: 'var(--font-display)' }}>{maxim.latinPhrase}</strong>{' '}
             (fonetis:{' '}
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', backgroundColor: '#F8F9FA', border: '1px solid #EAECF0', padding: '0.0625rem 0.375rem', borderRadius: '2px' }}>
@@ -250,7 +271,7 @@ export default function MaximDetailClient({ maxim }: Props) {
             Asas ini merupakan prinsip fundamental dalam sistem hukum yang berasal dari tradisi Hukum Romawi dan diadopsi dalam tata hukum Indonesia melalui jalur <em>civil law</em>.
           </p>
 
-          {/* ── Table of Contents ─────────────────────────────── */}
+          {/* ── Table of Contents (Responsive Collapsible) ── */}
           <div style={{ clear: 'both' }} />
           <div style={{
             display: 'inline-block',
@@ -258,57 +279,83 @@ export default function MaximDetailClient({ maxim }: Props) {
             border: '1px solid #A2A9B1',
             padding: '0.75rem 1.25rem',
             marginBottom: '1.5rem',
-            minWidth: '240px',
+            width: '100%',
             maxWidth: '360px',
-          }}>
-            <div style={{ fontWeight: 700, fontSize: '0.875rem', fontFamily: 'var(--font-body)', textAlign: 'center', borderBottom: '1px solid #A2A9B1', paddingBottom: '0.375rem', marginBottom: '0.5rem' }}>
-              Daftar Isi
+          }} className="wiki-toc">
+            <div 
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', borderBottom: tocExpanded ? '1px solid #A2A9B1' : 'none', paddingBottom: '0.375rem', marginBottom: tocExpanded ? '0.5rem' : 0 }}
+              onClick={() => setTocExpanded(!tocExpanded)}
+              role="button"
+              aria-expanded={tocExpanded}
+              aria-label="Daftar isi artikel"
+            >
+              <span style={{ fontWeight: 700, fontSize: '0.875rem', fontFamily: 'var(--font-body)' }}>Daftar Isi</span>
+              {tocExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </div>
-            <ol style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '0.8125rem', lineHeight: 2, fontFamily: 'var(--font-body)' }}>
-              <li><a href="#etimologi" className="wiki-link">Makna Harfiah &amp; Etimologi</a></li>
-              <li><a href="#makna-hukum" className="wiki-link">Makna Hukum &amp; Penerapan</a></li>
-              <li><a href="#sejarah" className="wiki-link">Sejarah &amp; Yurisprudensi</a></li>
-              <li><a href="#putusan" className="wiki-link">Penerapan dalam Putusan Pengadilan</a></li>
-              {maxim.relations.length > 0 && (
-                <li><a href="#relasi" className="wiki-link">Asas Hukum Terkait</a></li>
-              )}
-            </ol>
+            {tocExpanded && (
+              <ol style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '0.8125rem', lineHeight: 2, fontFamily: 'var(--font-body)' }}>
+                <li><a href="#etimologi" className="wiki-link">Makna Harfiah &amp; Etimologi</a></li>
+                <li><a href="#makna-hukum" className="wiki-link">Makna Hukum &amp; Penerapan</a></li>
+                <li><a href="#sejarah" className="wiki-link">Sejarah &amp; Yurisprudensi</a></li>
+                <li><a href="#putusan" className="wiki-link">Penerapan dalam Putusan Pengadilan</a></li>
+                {maxim.relations.length > 0 && (
+                  <li><a href="#relasi" className="wiki-link">Asas Hukum Terkait</a></li>
+                )}
+              </ol>
+            )}
           </div>
 
           {/* ══════════════════════════════════════════════════════
-              SECTION 1: Etimologi
+              SECTION 1: Etimologi (Responsive layout)
           ══════════════════════════════════════════════════════ */}
           <SectionH2 id="etimologi">1. Makna Harfiah &amp; Etimologi</SectionH2>
           <WikiHR />
 
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', lineHeight: 1.75, color: '#202122', marginBottom: '1rem' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', lineHeight: 1.75, color: '#202122', marginBottom: '1rem' }} className="text-wrap-safe">
             Secara harfiah, <strong>{maxim.latinPhrase}</strong> dapat diartikan sebagai:{' '}
             <em style={{ backgroundColor: '#FFFDE7', padding: '0.125rem 0.25rem' }}>&ldquo;{maxim.literalTranslation}&rdquo;</em>.
             Berikut adalah penjabaran kata per kata dari frase Latin tersebut:
           </p>
 
-          {/* Word-by-word table (Wikipedia style) */}
-          <div style={{ overflowX: 'auto', marginBottom: '1.25rem' }}>
-            <table style={{ borderCollapse: 'collapse', width: '100%', fontFamily: 'var(--font-body)', fontSize: '0.875rem' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#EAECF0' }}>
-                  <th style={{ border: '1px solid #A2A9B1', padding: '0.5rem 0.875rem', textAlign: 'left', fontWeight: 700, color: '#202122' }}>Kata Latin</th>
-                  <th style={{ border: '1px solid #A2A9B1', padding: '0.5rem 0.875rem', textAlign: 'left', fontWeight: 700, color: '#202122' }}>Arti dalam Bahasa Indonesia</th>
-                </tr>
-              </thead>
-              <tbody>
-                {maxim.wordByWord.map((w, i) => (
-                  <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#F8F9FA' }}>
-                    <td style={{ border: '1px solid #EAECF0', padding: '0.4375rem 0.875rem', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--navy)', fontStyle: 'italic' }}>
-                      {w.word}
-                    </td>
-                    <td style={{ border: '1px solid #EAECF0', padding: '0.4375rem 0.875rem', color: '#202122' }}>
-                      {w.meaning}
-                    </td>
+          {/* Word-by-word responsive container */}
+          <div style={{ marginBottom: '1.25rem' }}>
+            {/* Desktop Table View */}
+            <div className="hidden sm:block">
+              <table style={{ borderCollapse: 'collapse', width: '100%', fontFamily: 'var(--font-body)', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#EAECF0' }}>
+                    <th style={{ border: '1px solid #A2A9B1', padding: '0.5rem 0.875rem', textAlign: 'left', fontWeight: 700, color: '#202122' }}>Kata Latin</th>
+                    <th style={{ border: '1px solid #A2A9B1', padding: '0.5rem 0.875rem', textAlign: 'left', fontWeight: 700, color: '#202122' }}>Arti dalam Bahasa Indonesia</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {maxim.wordByWord.map((w, i) => (
+                    <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#F8F9FA' }}>
+                      <td style={{ border: '1px solid #EAECF0', padding: '0.4375rem 0.875rem', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--navy)', fontStyle: 'italic' }}>
+                        {w.word}
+                      </td>
+                      <td style={{ border: '1px solid #EAECF0', padding: '0.4375rem 0.875rem', color: '#202122' }}>
+                        {w.meaning}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card-List View */}
+            <div className="sm:hidden" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {maxim.wordByWord.map((w, i) => (
+                <div key={i} style={{ padding: '0.75rem 1rem', border: '1px solid #EAECF0', backgroundColor: '#F8F9FA', borderRadius: '2px' }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--navy)', fontStyle: 'italic', fontSize: '0.9375rem', marginBottom: '0.125rem' }}>
+                    {w.word}
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: '#202122' }}>
+                    {w.meaning}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* ══════════════════════════════════════════════════════
@@ -330,7 +377,7 @@ export default function MaximDetailClient({ maxim }: Props) {
           ══════════════════════════════════════════════════════ */}
           <SectionH2 id="putusan">4. Penerapan dalam Putusan Pengadilan</SectionH2>
           <WikiHR />
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', lineHeight: 1.75, color: '#202122', marginBottom: '1rem' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', lineHeight: 1.75, color: '#202122', marginBottom: '1rem' }} className="text-wrap-safe">
             Berikut adalah beberapa putusan pengadilan yang secara nyata menerapkan asas <strong>{maxim.latinPhrase}</strong> sebagai dasar pertimbangan hukum:
           </p>
 
@@ -368,10 +415,10 @@ export default function MaximDetailClient({ maxim }: Props) {
                   lineHeight: 1.7,
                   color: '#202122',
                   fontStyle: 'italic',
-                }}>
+                }} className="text-wrap-safe">
                   &ldquo;{ex.excerpt}&rdquo;
                 </blockquote>
-                <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: '#54595D', lineHeight: 1.5 }}>
+                <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: '#54595D', lineHeight: 1.5 }} className="text-wrap-safe">
                   <strong>Ringkasan:</strong> {ex.summary}
                 </p>
               </div>
@@ -399,7 +446,7 @@ export default function MaximDetailClient({ maxim }: Props) {
                         backgroundColor: color.bg,
                         padding: '0.875rem 1rem',
                         transition: 'opacity 150ms',
-                      }}>
+                      }} className="interactive-card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.25rem' }}>
                           <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.875rem', color: 'var(--navy)', lineHeight: 1.3 }}>
                             {rel.latinPhrase}
@@ -418,7 +465,7 @@ export default function MaximDetailClient({ maxim }: Props) {
                             {relationTypeLabels[rel.relationType] || rel.relationType}
                           </span>
                         </div>
-                        <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: '#54595D', lineHeight: 1.4 }}>
+                        <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: '#54595D', lineHeight: 1.4 }} className="text-wrap-safe">
                           {rel.indonesianMeaning}
                         </p>
                       </div>
@@ -429,7 +476,7 @@ export default function MaximDetailClient({ maxim }: Props) {
             </>
           )}
 
-          {/* ── Article Footer ────────────────────────────────── */}
+          {/* ── Article Footer ── */}
           <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #A2A9B1', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: '#54595D' }}>
               Lanjutkan belajar:

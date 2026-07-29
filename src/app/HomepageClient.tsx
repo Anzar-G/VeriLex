@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Brain, BookMarked, Star, ArrowRight } from 'lucide-react';
+import { Search, Brain, BookMarked, Star, ArrowRight, Library } from 'lucide-react';
 import { legalFields, mockMaxims } from '@/data/mockData';
 import MaximCard from '@/components/maxim/MaximCard';
 import { useVeriLexStore } from '@/lib/useStore';
@@ -28,50 +28,73 @@ export default function HomepageClient() {
   return (
     <main style={{ backgroundColor: '#F8F9FA', minHeight: 'calc(100vh - 60px)' }}>
 
-      {/* ── Top Search Portal Bar ─────────────────────────── */}
-      <section style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #A2A9B1', padding: '1.25rem 0' }}>
+      {/* ── Top Portal Section (Wikipedia Hero Style with Subtle Pattern) ── */}
+      <section 
+        style={{ 
+          backgroundColor: '#FFFFFF', 
+          borderBottom: '1px solid #A2A9B1', 
+          padding: '2.5rem 0 2rem',
+          backgroundImage: 'radial-gradient(rgba(15, 27, 60, 0.03) 1px, transparent 0)',
+          backgroundSize: '24px 24px'
+        }}
+      >
         <div className="container-page">
-
-          {/* Title row */}
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '0.875rem', flexWrap: 'wrap' }}>
-            <h1 style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 700,
-              fontSize: '1.625rem',
-              color: 'var(--navy)',
-              margin: 0,
-              border: 'none',
-              padding: 0,
+          {/* Main Title Portal */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            <div style={{ 
+              backgroundColor: 'var(--navy)', 
+              color: '#FFFFFF', 
+              padding: '0.625rem', 
+              borderRadius: '2px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center' 
             }}>
-              VeriLex
-            </h1>
-            <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: '#54595D', borderLeft: '1px solid #A2A9B1', paddingLeft: '0.75rem' }}>
-              Ensiklopedia Maksim Hukum Latin — {mockMaxims.length} entri dikurasi
-            </span>
+              <Library size={32} />
+            </div>
+            <div>
+              <h1 style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 700,
+                fontSize: '2rem',
+                color: 'var(--navy)',
+                margin: 0,
+                border: 'none',
+                padding: 0,
+                lineHeight: 1.2
+              }}>
+                Selamat Datang di VeriLex
+              </h1>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: '#54595D', margin: '0.25rem 0 0' }}>
+                Ensiklopedia Maksim Hukum Latin Terintegrasi — {mockMaxims.length} Entri Akademik Dikurasi
+              </p>
+            </div>
           </div>
 
-          {/* Search Form */}
-          <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', maxWidth: '580px', marginBottom: '1rem' }}>
+          {/* Search Form (Primary Search) */}
+          <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', maxWidth: '640px', marginBottom: '1.5rem' }} role="search">
             <div style={{ position: 'relative', flex: 1 }}>
+              <label htmlFor="main-search-input" className="sr-only">Cari frase Latin atau arti Indonesia</label>
               <input
                 type="search"
+                id="main-search-input"
                 placeholder='Cari maksim (misal: "Lex Posterior", "Nullum Crimen"...)'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="input-text"
-                style={{ paddingLeft: '2.25rem', backgroundColor: '#F8F9FA' }}
+                style={{ paddingLeft: '2.5rem', backgroundColor: '#F8F9FA', height: '44px', fontSize: '0.9375rem' }}
               />
-              <Search size={15} style={{ position: 'absolute', left: '0.625rem', top: '50%', transform: 'translateY(-50%)', color: '#72777D', pointerEvents: 'none' }} />
+              <Search size={18} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#72777D', pointerEvents: 'none' }} />
             </div>
-            <button type="submit" className="btn-primary" style={{ whiteSpace: 'nowrap', padding: '0 1.125rem', fontSize: '0.875rem' }}>
-              Cari
+            <button type="submit" className="btn-primary" style={{ whiteSpace: 'nowrap', padding: '0 1.5rem', fontSize: '0.9375rem', height: '44px' }}>
+              Cari Maksim
             </button>
           </form>
 
           {/* Alphabetical Index */}
-          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.25rem' }}>
-            <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.75rem', color: '#54595D', marginRight: '0.375rem', whiteSpace: 'nowrap' }}>
-              Indeks A–Z:
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.3125rem' }}>
+            <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.8125rem', color: '#54595D', marginRight: '0.5rem', whiteSpace: 'nowrap' }}>
+              Indeks Alfabetis A–Z:
             </span>
             {ALPHABET.map((letter) => (
               <Link
@@ -80,14 +103,24 @@ export default function HomepageClient() {
                 className="wiki-link"
                 title={`Lihat maksim diawali ${letter}`}
                 style={{
-                  padding: '0.125rem 0.3125rem',
+                  padding: '0.25rem 0.5rem',
                   backgroundColor: '#FFFFFF',
-                  border: '1px solid #EAECF0',
+                  border: '1px solid #A2A9B1',
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '0.75rem',
-                  lineHeight: 1.5,
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  lineHeight: 1,
                   display: 'inline-block',
-                  transition: 'background 100ms',
+                  transition: 'all 100ms',
+                  borderRadius: '2px'
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--navy)';
+                  (e.currentTarget as HTMLElement).style.backgroundColor = '#F8F9FA';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = '#A2A9B1';
+                  (e.currentTarget as HTMLElement).style.backgroundColor = '#FFFFFF';
                 }}
               >
                 {letter}
@@ -97,105 +130,104 @@ export default function HomepageClient() {
         </div>
       </section>
 
-      {/* ── Main Two-Column Portal ───────────────────────── */}
-      <div className="container-page" style={{ marginTop: '1.5rem', paddingBottom: '3rem' }}>
+      {/* ── Main Two-Column Portal Layout ── */}
+      <div className="container-page" style={{ marginTop: '1.75rem', paddingBottom: '4rem' }}>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 340px',
-          gap: '1.5rem',
-          alignItems: 'start',
-        }}>
+          gridTemplateColumns: '1fr',
+          gap: '1.75rem',
+        }} className="lg:grid-cols-[1fr_340px]">
 
-          {/* ── Left Column ─────────────────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* ── Left Column: Content ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
 
-            {/* Featured Article */}
-            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1' }}>
-              <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #EAECF0', backgroundColor: '#F8F9FA', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.8125rem', color: 'var(--navy)' }}>
-                  ★ Artikel Pilihan
-                </span>
-                <Link href="/cari" className="wiki-link" style={{ fontSize: '0.75rem' }}>
-                  Lihat semua →
+            {/* Featured Article Card */}
+            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', borderRadius: '2px' }} className="interactive-card">
+              <div style={{ padding: '0.625rem 1.25rem', borderBottom: '1px solid #EAECF0', backgroundColor: '#F8F9FA', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h2 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.875rem', color: 'var(--navy)', margin: 0, border: 'none', padding: 0 }}>
+                  ★ Artikel Maksim Pilihan Hari Ini
+                </h2>
+                <Link href="/cari" className="wiki-link" style={{ fontSize: '0.8125rem', fontWeight: 500 }}>
+                  Jelajahi Semua Maksim →
                 </Link>
               </div>
-              <div style={{ padding: '1.25rem 1.5rem' }}>
-                <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.375rem', color: 'var(--navy)', margin: '0 0 0.25rem', border: 'none', padding: 0 }}>
+              <div style={{ padding: '1.5rem' }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.5rem', color: 'var(--navy)', margin: '0 0 0.25rem', border: 'none', padding: 0 }}>
                   <Link href={`/maksim/${featuredMaxim.id}`} className="wiki-link" style={{ color: 'var(--navy)' }}>
                     {featuredMaxim.latinPhrase}
                   </Link>
-                </h2>
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#72777D', marginBottom: '0.75rem' }}>
+                </h3>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', color: '#72777D', marginBottom: '1rem' }}>
                   {featuredMaxim.pronunciationGuide}
                 </p>
 
-                {/* Infobox terintegrasi */}
-                <table style={{ float: 'right', width: '210px', margin: '0 0 0.75rem 1.25rem', border: '1px solid #A2A9B1', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
+                {/* Embedded Infobox table */}
+                <table style={{ float: 'right', width: '220px', margin: '0 0 1rem 1.5rem', border: '1px solid #A2A9B1', fontSize: '0.8125rem', borderCollapse: 'collapse', backgroundColor: '#F8F9FA' }} className="hidden sm:table">
                   <tbody>
                     <tr>
-                      <td colSpan={2} style={{ backgroundColor: 'var(--navy)', color: '#FFF', padding: '0.375rem 0.625rem', fontWeight: 700, textAlign: 'center', fontFamily: 'var(--font-body)' }}>
-                        Infobox Maksim
+                      <td colSpan={2} style={{ backgroundColor: 'var(--navy)', color: '#FFF', padding: '0.5rem', fontWeight: 700, textAlign: 'center', fontFamily: 'var(--font-body)' }}>
+                        Informasi Singkat
                       </td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #EAECF0' }}>
-                      <td style={{ padding: '0.3125rem 0.625rem', fontWeight: 700, color: '#54595D', width: '40%' }}>Bidang</td>
-                      <td style={{ padding: '0.3125rem 0.625rem', color: '#202122' }}>
+                      <td style={{ padding: '0.375rem 0.5rem', fontWeight: 700, color: '#54595D', width: '45%' }}>Bidang</td>
+                      <td style={{ padding: '0.375rem 0.5rem', color: '#202122' }}>
                         {featuredMaxim.legalFields.map(f => ({
                           pidana: 'Pidana', perdata: 'Perdata', 'tata-negara': 'Tata Negara', internasional: 'Internasional', administrasi: 'Administrasi',
                         }[f] || f)).join(', ')}
                       </td>
                     </tr>
                     <tr>
-                      <td style={{ padding: '0.3125rem 0.625rem', fontWeight: 700, color: '#54595D' }}>Tradisi</td>
-                      <td style={{ padding: '0.3125rem 0.625rem', color: '#202122' }}>Hukum Romawi</td>
+                      <td style={{ padding: '0.375rem 0.5rem', fontWeight: 700, color: '#54595D' }}>Asal Tradisi</td>
+                      <td style={{ padding: '0.375rem 0.5rem', color: '#202122' }}>Hukum Romawi</td>
                     </tr>
                   </tbody>
                 </table>
 
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', color: '#202122', lineHeight: 1.65, marginBottom: '0.875rem' }}>
-                  <strong>{featuredMaxim.latinPhrase}</strong> — {featuredMaxim.legalMeaning.split('\n\n')[0]?.substring(0, 280)}...
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', color: '#202122', lineHeight: 1.7, marginBottom: '1rem' }}>
+                  <strong>{featuredMaxim.latinPhrase}</strong> — {featuredMaxim.legalMeaning.split('\n\n')[0]?.substring(0, 320)}...
                 </p>
                 <div style={{ clear: 'both' }} />
                 <Link href={`/maksim/${featuredMaxim.id}`} className="wiki-link" style={{ fontWeight: 600, fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                  Baca artikel lengkap <ArrowRight size={14} />
+                  Baca artikel selengkapnya <ArrowRight size={14} />
                 </Link>
               </div>
             </div>
 
-            {/* Entri Terkini */}
-            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1' }}>
-              <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #EAECF0', backgroundColor: '#F8F9FA' }}>
-                <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.8125rem', color: 'var(--navy)' }}>
-                  Entri Terkini dalam Ensiklopedia
-                </span>
+            {/* Recent Additions Card */}
+            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', borderRadius: '2px' }}>
+              <div style={{ padding: '0.625rem 1.25rem', borderBottom: '1px solid #EAECF0', backgroundColor: '#F8F9FA' }}>
+                <h2 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.875rem', color: 'var(--navy)', margin: 0 }}>
+                  Entri Maksim Terkini
+                </h2>
               </div>
-              <div style={{ padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {recentMaxims.map(maxim => (
                   <MaximCard key={maxim.id} maxim={maxim} compact />
                 ))}
-                <Link href="/cari" className="btn-secondary" style={{ marginTop: '0.5rem', width: 'fit-content', fontSize: '0.8125rem' }}>
-                  Jelajahi semua maksim →
+                <Link href="/cari" className="btn-secondary" style={{ marginTop: '0.5rem', width: 'fit-content', fontSize: '0.8125rem', alignSelf: 'center' }}>
+                  Lihat Semua Daftar Maksim →
                 </Link>
               </div>
             </div>
 
           </div>
 
-          {/* ── Right Sidebar Column ──────────────────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* ── Right Column: Sidebar ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-            {/* Modul Pembelajaran */}
-            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1' }}>
-              <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #EAECF0', backgroundColor: '#F8F9FA' }}>
-                <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.8125rem', color: 'var(--navy)' }}>
-                  Modul Pembelajaran
-                </span>
+            {/* Learning Modules */}
+            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', borderRadius: '2px' }}>
+              <div style={{ padding: '0.625rem 1.25rem', borderBottom: '1px solid #EAECF0', backgroundColor: '#F8F9FA' }}>
+                <h2 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.875rem', color: 'var(--navy)', margin: 0 }}>
+                  Modul Pembelajaran Interaktif
+                </h2>
               </div>
-              <div style={{ padding: '0.875rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+              <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {[
-                  { href: '/quiz', icon: Brain, label: 'Quiz Interaktif', sub: 'Uji kompetensi, 5 soal/sesi' },
-                  { href: '/flashcard', icon: BookMarked, label: 'Flashcard SRA', sub: 'Spaced Repetition Algorithm' },
-                  { href: '/favorit', icon: Star, label: `Favorit Saya (${favorites.length})`, sub: 'Akses cepat ke maksim simpanan' },
+                  { href: '/quiz', icon: Brain, label: 'Quiz Interaktif', sub: 'Uji kompetensi asas dengan 5 soal acak' },
+                  { href: '/flashcard', icon: BookMarked, label: 'Flashcard SRA', sub: 'Pelajari asas secara bertahap & persisten' },
+                  { href: '/favorit', icon: Star, label: `Favorit Saya (${favorites.length})`, sub: 'Maksim penting yang Anda simpan' },
                 ].map(item => (
                   <Link
                     key={item.href}
@@ -203,17 +235,34 @@ export default function HomepageClient() {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.75rem',
-                      padding: '0.625rem 0.75rem',
-                      backgroundColor: '#F8F9FA',
+                      gap: '0.875rem',
+                      padding: '0.75rem 1rem',
+                      backgroundColor: '#FFFFFF',
                       border: '1px solid #EAECF0',
                       textDecoration: 'none',
-                      transition: 'border-color 100ms, background 100ms',
+                      transition: 'all 150ms ease-in-out',
+                      borderRadius: '2px',
                     }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--navy)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#EAECF0'; }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLElement).style.borderColor = 'var(--navy)';
+                      (e.currentTarget as HTMLElement).style.backgroundColor = '#F8F9FA';
+                      (e.currentTarget as HTMLElement).style.transform = 'translateX(2px)';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLElement).style.borderColor = '#EAECF0';
+                      (e.currentTarget as HTMLElement).style.backgroundColor = '#FFFFFF';
+                      (e.currentTarget as HTMLElement).style.transform = 'none';
+                    }}
                   >
-                    <item.icon size={20} color="var(--navy)" />
+                    <div style={{
+                      backgroundColor: 'rgba(15, 27, 60, 0.05)',
+                      padding: '0.5rem',
+                      borderRadius: '2px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
+                      <item.icon size={20} color="var(--navy)" />
+                    </div>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--navy)', fontFamily: 'var(--font-body)' }}>{item.label}</div>
                       <div style={{ fontSize: '0.75rem', color: '#72777D' }}>{item.sub}</div>
@@ -223,26 +272,26 @@ export default function HomepageClient() {
               </div>
             </div>
 
-            {/* Portal Bidang Hukum */}
-            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1' }}>
-              <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #EAECF0', backgroundColor: '#F8F9FA' }}>
-                <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.8125rem', color: 'var(--navy)' }}>
+            {/* Legal Field Portal Links */}
+            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', borderRadius: '2px' }}>
+              <div style={{ padding: '0.625rem 1.25rem', borderBottom: '1px solid #EAECF0', backgroundColor: '#F8F9FA' }}>
+                <h2 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.875rem', color: 'var(--navy)', margin: 0 }}>
                   Portal Bidang Hukum
-                </span>
+                </h2>
               </div>
               <div style={{ padding: '0.25rem 0' }}>
                 {legalFields.map(field => (
                   <Link
                     key={field.id}
                     href={`/cari?bidang=${field.id}`}
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 1rem', textDecoration: 'none', borderBottom: '1px solid #EAECF0' }}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.625rem 1.25rem', textDecoration: 'none', borderBottom: '1px solid #EAECF0' }}
                     onMouseEnter={e => ((e.currentTarget as HTMLElement).style.backgroundColor = '#F8F9FA')}
                     onMouseLeave={e => ((e.currentTarget as HTMLElement).style.backgroundColor = 'transparent')}
                   >
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: 'var(--wiki-blue)' }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: 'var(--wiki-blue)', fontWeight: 500 }}>
                       {field.label}
                     </span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#72777D', backgroundColor: '#EAECF0', padding: '0.0625rem 0.375rem', borderRadius: '2px' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#72777D', backgroundColor: '#EAECF0', padding: '0.125rem 0.5rem', borderRadius: '2px' }}>
                       {field.count}
                     </span>
                   </Link>
@@ -250,13 +299,27 @@ export default function HomepageClient() {
               </div>
             </div>
 
-            {/* Statistik */}
-            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '0.875rem 1rem', fontSize: '0.8125rem', color: '#54595D', fontFamily: 'var(--font-body)', lineHeight: 1.8 }}>
-              <strong style={{ display: 'block', color: 'var(--navy)', marginBottom: '0.375rem' }}>Statistik VeriLex</strong>
-              Entri Maksim: <strong>{mockMaxims.length}</strong><br />
-              Bidang Hukum: <strong>5</strong><br />
-              Contoh Putusan: <strong>{mockMaxims.reduce((n, m) => n + m.caseExamples.length, 0)}</strong><br />
-              Tersimpan di Favorit Anda: <strong>{favorites.length}</strong>
+            {/* Encyclopedia Stats */}
+            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', borderRadius: '2px', padding: '1rem', fontSize: '0.8125rem', color: '#54595D', fontFamily: 'var(--font-body)', lineHeight: 1.8 }}>
+              <h2 style={{ fontWeight: 700, color: 'var(--navy)', fontSize: '0.875rem', margin: '0 0 0.5rem', border: 'none', padding: 0 }}>
+                Statistik VeriLex
+              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #EAECF0', paddingBottom: '0.25rem', marginBottom: '0.25rem' }}>
+                <span>Jumlah Maksim:</span>
+                <strong>{mockMaxims.length} entri</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #EAECF0', paddingBottom: '0.25rem', marginBottom: '0.25rem' }}>
+                <span>Kategori Hukum:</span>
+                <strong>5 Bidang</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #EAECF0', paddingBottom: '0.25rem', marginBottom: '0.25rem' }}>
+                <span>Contoh Putusan Kasus:</span>
+                <strong>{mockMaxims.reduce((n, m) => n + m.caseExamples.length, 0)} kasus</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Favorit Tersimpan:</span>
+                <strong>{favorites.length} entri</strong>
+              </div>
             </div>
 
           </div>

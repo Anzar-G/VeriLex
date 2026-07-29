@@ -13,9 +13,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const maxim = getMaximById(id);
   if (!maxim) return { title: 'Maksim tidak ditemukan — VeriLex' };
+  
+  const canonicalUrl = `https://verilex.vercel.app/maksim/${id}`;
+
   return {
-    title: `${maxim.latinPhrase} — VeriLex`,
-    description: maxim.indonesianMeaning,
+    title: `${maxim.latinPhrase} — Arti & Penjelasan Hukum | VeriLex`,
+    description: `Pelajari makna hukum, etimologi, sejarah, dan putusan pengadilan terkait maksim Latin: ${maxim.latinPhrase} (${maxim.indonesianMeaning}).`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: `${maxim.latinPhrase} — VeriLex`,
+      description: maxim.indonesianMeaning,
+      url: canonicalUrl,
+      type: 'article',
+    }
   };
 }
 
