@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Trophy, ArrowRight, HelpCircle, GraduationCap } from 'lucide-react';
 import { mockQuizQuestions } from '@/data/mockData';
 import type { QuizQuestion } from '@/types';
+import { useVeriLexStore } from '@/lib/useStore';
 
 export default function QuizClient() {
   const [started, setStarted] = useState(false);
@@ -14,6 +15,7 @@ export default function QuizClient() {
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const { addQuizScore } = useVeriLexStore();
 
   const startQuiz = () => {
     setQuestions([...mockQuizQuestions].sort(() => 0.5 - Math.random()).slice(0, 5));
@@ -45,6 +47,9 @@ export default function QuizClient() {
       setSelectedOption(null);
       setIsAnswered(false);
     } else {
+      const finalScore = score + (selectedOption === questions[currentQuestionIndex].correctIndex ? 1 : 0);
+      const percentage = Math.round((finalScore / questions.length) * 100);
+      addQuizScore(percentage);
       setShowResults(true);
     }
   };

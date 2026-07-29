@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, RefreshCcw, ThumbsUp, ThumbsDown, BookMarked, Settings2, Play, Info } from 'lucide-react';
 import { mockMaxims } from '@/data/mockData';
 import type { Maxim } from '@/types';
+import { useVeriLexStore } from '@/lib/useStore';
 
 export default function FlashcardClient() {
   const [started, setStarted] = useState(false);
@@ -12,6 +13,7 @@ export default function FlashcardClient() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionStats, setSessionStats] = useState({ known: 0, learning: 0 });
+  const { flashcardLevels, setFlashcardLevel } = useVeriLexStore();
   
   // Settings
   const [mode, setMode] = useState<'latin-to-id' | 'id-to-latin'>('latin-to-id');
@@ -26,10 +28,15 @@ export default function FlashcardClient() {
   };
 
   const handleNext = (known: boolean) => {
+    const currentCard = cards[currentIndex];
+    const currentLevel = flashcardLevels[currentCard.id] || 1;
+    
     if (known) {
       setSessionStats(prev => ({ ...prev, known: prev.known + 1 }));
+      setFlashcardLevel(currentCard.id, Math.min(currentLevel + 1, 5));
     } else {
       setSessionStats(prev => ({ ...prev, learning: prev.learning + 1 }));
+      setFlashcardLevel(currentCard.id, Math.max(currentLevel - 1, 1));
     }
 
     if (currentIndex < cards.length - 1) {

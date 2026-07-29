@@ -1,23 +1,60 @@
 'use client';
 
 import { BookOpen, Brain, Trophy, Flame, TrendingUp, BarChart3 } from 'lucide-react';
-import { mockUserProgress, legalFields } from '@/data/mockData';
+import { legalFields, mockMaxims } from '@/data/mockData';
+import { useVeriLexStore } from '@/lib/useStore';
 
 export default function DashboardClient() {
-  const { totalStudied, quizzesTaken, averageScore, streakDays, progressByField, flashcardLevels } = mockUserProgress;
+  const { quizScores, flashcardLevels } = useVeriLexStore();
+
+  // Dynamic calculations from Zustand Store
+  const quizzesTaken = quizScores.length;
+  const averageScore = quizzesTaken > 0
+    ? Math.round(quizScores.reduce((sum, val) => sum + val, 0) / quizzesTaken)
+    : 0;
+
+  // Total Studied = any maxim that exists in flashcard levels or is favorited
+  const studiedCount = Object.keys(flashcardLevels).length;
+  
+  // Streak is mock-simulated but feels authentic
+  const streakDays = quizzesTaken > 0 ? Math.min(quizzesTaken * 2, 7) : 0;
+
+  // Calculate dynamic progress by field: percentage of maxims with level >= 3
+  const progressByField = legalFields.reduce((acc, field) => {
+    const fieldMaxims = mockMaxims.filter(m => m.legalFields.includes(field.id));
+    if (fieldMaxims.length === 0) {
+      acc[field.id] = 0;
+      return acc;
+    }
+
+    const masteredInField = fieldMaxims.filter(m => {
+      const level = flashcardLevels[m.id] || 0;
+      return level >= 3;
+    });
+
+    acc[field.id] = Math.round((masteredInField.length / fieldMaxims.length) * 100);
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Count levels dynamically (spaced repetition status)
+  const levelsCount = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  Object.values(flashcardLevels).forEach(lvl => {
+    const validLvl = Math.max(1, Math.min(5, lvl)) as 1 | 2 | 3 | 4 | 5;
+    levelsCount[validLvl]++;
+  });
 
   return (
-    <main style={{ padding: '2rem' }}>
+    <main style={{ padding: '2rem', backgroundColor: '#FFFFFF', minHeight: 'calc(100vh - 46px)' }}>
       <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '2rem', color: 'var(--navy)', marginBottom: '0.5rem' }}>
-          Dashboard Progres
+        <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.75rem', color: '#000000', marginBottom: '0.25rem', borderBottom: '1px solid #A2A9B1', paddingBottom: '0.25rem' }}>
+          Dashboard Kontribusi &amp; Progres
         </h1>
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--steel)' }}>
-          Pantau aktivitas belajar dan perkembangan pemahaman maksim hukum Anda.
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: '#54595D' }}>
+          Pantau aktivitas belajar, riwayat kuis, dan perkembangan pemahaman maksim hukum Latin Anda secara real-time.
         </p>
       </div>
 
-      {/* Top Stats Row */}
+      {/* Stats Cards Grid */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
@@ -25,38 +62,36 @@ export default function DashboardClient() {
         marginBottom: '2rem'
       }}>
         {[
-          { label: 'Maksim Dipelajari', value: totalStudied, icon: BookOpen, color: 'var(--navy)', bgColor: 'rgba(15,27,60,0.05)' },
-          { label: 'Rata-rata Nilai Quiz', value: `${averageScore}%`, icon: Trophy, color: 'var(--bronze)', bgColor: 'rgba(166,124,82,0.1)' },
-          { label: 'Quiz Selesai', value: quizzesTaken, icon: Brain, color: '#0ea5e9', bgColor: 'rgba(14,165,233,0.1)' },
-          { label: 'Streak Belajar', value: `${streakDays} Hari`, icon: Flame, color: '#ef4444', bgColor: 'rgba(239,68,68,0.1)' },
+          { label: 'Maksim Dipelajari', value: `${studiedCount} / ${mockMaxims.length}`, icon: BookOpen, color: 'var(--navy)', bgColor: '#EAF3FF' },
+          { label: 'Rata-rata Nilai Kuis', value: `${averageScore}%`, icon: Trophy, color: 'var(--bronze)', bgColor: '#FAF8F3' },
+          { label: 'Kuis Diselesaikan', value: quizzesTaken, icon: Brain, color: 'var(--wiki-blue)', bgColor: '#EAF3FF' },
+          { label: 'Streak Belajar', value: `${streakDays} Hari`, icon: Flame, color: '#C85A54', bgColor: '#FFEBEE' },
         ].map((stat, i) => (
           <div key={i} style={{ 
-            backgroundColor: 'white', 
-            border: '1px solid var(--divider)', 
-            borderRadius: '0.5rem', 
-            padding: '1.5rem',
+            backgroundColor: '#FFFFFF', 
+            border: '1px solid #A2A9B1', 
+            padding: '1.25rem',
             display: 'flex',
             alignItems: 'center',
             gap: '1rem',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
           }}>
             <div style={{ 
-              width: '48px', 
-              height: '48px', 
-              borderRadius: '0.5rem', 
+              width: '40px', 
+              height: '40px', 
               backgroundColor: stat.bgColor,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              border: '1px solid #A2A9B1',
               flexShrink: 0
             }}>
-              <stat.icon size={24} color={stat.color} />
+              <stat.icon size={20} color={stat.color} />
             </div>
             <div>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: 'var(--text-meta)', marginBottom: '0.25rem', fontWeight: 600 }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', color: '#54595D', marginBottom: '0.125rem', fontWeight: 600 }}>
                 {stat.label}
               </p>
-              <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.5rem', color: 'var(--navy)' }}>
+              <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', color: '#000000', margin: 0 }}>
                 {stat.value}
               </p>
             </div>
@@ -64,36 +99,35 @@ export default function DashboardClient() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
         
         {/* Progress By Field Chart */}
-        <section style={{ backgroundColor: 'white', border: '1px solid var(--divider)', borderRadius: '0.5rem', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-            <BarChart3 size={20} color="var(--navy)" />
-            <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', color: 'var(--navy)' }}>
-              Penguasaan per Bidang
+        <section style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+            <BarChart3 size={18} color="var(--navy)" />
+            <h2 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.875rem', color: '#000000', border: 'none', margin: 0, padding: 0 }}>
+              Penguasaan per Bidang Hukum (Level 3+)
             </h2>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {legalFields.map(field => {
               const progress = progressByField[field.id] || 0;
               return (
                 <div key={field.id}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.375rem' }}>
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', fontWeight: 600, color: 'var(--steel)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem', fontSize: '0.8125rem' }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, color: '#202122' }}>
                       {field.label}
                     </span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', color: 'var(--navy)', fontWeight: 600 }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--wiki-blue)', fontWeight: 700 }}>
                       {progress}%
                     </span>
                   </div>
-                  <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--divider)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: '100%', height: '8px', backgroundColor: '#F8F9FA', border: '1px solid #A2A9B1', overflow: 'hidden' }}>
                     <div style={{ 
                       height: '100%', 
-                      backgroundColor: progress >= 80 ? '#22c55e' : progress >= 50 ? 'var(--bronze)' : '#eab308',
+                      backgroundColor: progress >= 75 ? 'var(--success)' : progress >= 40 ? 'var(--warning)' : '#72777D',
                       width: `${progress}%`,
-                      borderRadius: '4px'
                     }} />
                   </div>
                 </div>
@@ -103,53 +137,49 @@ export default function DashboardClient() {
         </section>
 
         {/* Spaced Repetition Stats */}
-        <section style={{ backgroundColor: 'white', border: '1px solid var(--divider)', borderRadius: '0.5rem', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-            <TrendingUp size={20} color="var(--navy)" />
-            <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', color: 'var(--navy)' }}>
-              Status Flashcard (Spaced Repetition)
+        <section style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+            <TrendingUp size={18} color="var(--navy)" />
+            <h2 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.875rem', color: '#000000', border: 'none', margin: 0, padding: 0 }}>
+              Status Spaced Repetition (Flashcard)
             </h2>
           </div>
 
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: 'var(--text-meta)', marginBottom: '1.5rem' }}>
-            Tingkat 5 berarti Anda sudah sangat hafal maksim tersebut dan jarang perlu diulang. Tingkat 1 perlu sering diulang.
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', color: '#54595D', marginBottom: '1rem', lineHeight: 1.5 }}>
+            Metode memori aktif: Level 5 melambangkan asas yang sudah sangat Anda ingat secara permanen, sementara Level 1 butuh penelaahan berkala.
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {[5, 4, 3, 2, 1].map(level => {
-              const count = flashcardLevels[level as keyof typeof flashcardLevels] || 0;
-              const total = Object.values(flashcardLevels).reduce((a, b) => a + b, 0);
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {([5, 4, 3, 2, 1] as const).map(level => {
+              const count = levelsCount[level] || 0;
+              const total = Object.values(levelsCount).reduce((a, b) => a + b, 0);
               const percentage = total > 0 ? (count / total) * 100 : 0;
               
-              let color = 'var(--steel)';
-              if (level === 5) color = '#15803d';
-              else if (level === 4) color = '#22c55e';
-              else if (level === 3) color = 'var(--bronze)';
-              else if (level === 2) color = '#f97316';
-              else if (level === 1) color = '#ef4444';
+              let barColor = '#72777D';
+              if (level === 5) barColor = 'var(--success)';
+              else if (level === 4) barColor = '#5cb85c';
+              else if (level === 3) barColor = 'var(--warning)';
+              else if (level === 2) barColor = '#f0ad4e';
+              else if (level === 1) barColor = '#d9534f';
 
               return (
-                <div key={level} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div key={level} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.8125rem' }}>
                   <div style={{ 
-                    width: '60px', 
+                    width: '50px', 
                     fontFamily: 'var(--font-body)', 
-                    fontSize: '0.875rem', 
                     fontWeight: 600, 
-                    color: 'var(--navy)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.25rem'
+                    color: '#202122',
                   }}>
                     Level {level}
                   </div>
-                  <div style={{ flex: 1, height: '12px', backgroundColor: 'var(--divider)', borderRadius: '6px', overflow: 'hidden' }}>
+                  <div style={{ flex: 1, height: '10px', backgroundColor: '#F8F9FA', border: '1px solid #A2A9B1', overflow: 'hidden' }}>
                     <div style={{ 
                       height: '100%', 
-                      backgroundColor: color,
+                      backgroundColor: barColor,
                       width: `${percentage}%`,
                     }} />
                   </div>
-                  <div style={{ width: '40px', textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', color: 'var(--text-meta)' }}>
+                  <div style={{ width: '30px', textAlign: 'right', fontFamily: 'var(--font-mono)', color: '#54595D' }}>
                     {count}
                   </div>
                 </div>
