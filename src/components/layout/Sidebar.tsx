@@ -2,28 +2,28 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, Scale, FileText, Star, Brain, BookMarked, HelpCircle, Info, Bookmark } from 'lucide-react';
 import { useVeriLexStore } from '@/lib/useStore';
 
-const legalFieldItems = [
-  { label: 'Semua Maksim', href: '/cari', icon: Scale },
-  { label: 'Hukum Pidana', href: '/cari?bidang=pidana', icon: Scale },
-  { label: 'Hukum Perdata', href: '/cari?bidang=perdata', icon: Scale },
-  { label: 'Tata Negara', href: '/cari?bidang=tata-negara', icon: Scale },
-  { label: 'Hukum Internasional', href: '/cari?bidang=internasional', icon: Scale },
-  { label: 'Administrasi Negara', href: '/cari?bidang=administrasi', icon: Scale },
+const mainNavigation = [
+  { label: 'Halaman Utama', href: '/' },
+  { label: 'Semua Maksim', href: '/cari' },
+  { label: 'Quiz Interaktif', href: '/quiz' },
+  { label: 'Flashcard SRA', href: '/flashcard' },
+  { label: 'Dashboard Progres', href: '/dashboard' },
 ];
 
-const learningItems = [
-  { label: 'Quiz Interaktif', href: '/quiz', icon: Brain },
-  { label: 'Flashcard SRA', href: '/flashcard', icon: BookMarked },
-  { label: 'Dashboard Progres', href: '/dashboard', icon: FileText },
+const legalFields = [
+  { label: 'Hukum Pidana', href: '/cari?bidang=pidana' },
+  { label: 'Hukum Perdata', href: '/cari?bidang=perdata' },
+  { label: 'Hukum Tata Negara', href: '/cari?bidang=tata-negara' },
+  { label: 'Hukum Internasional', href: '/cari?bidang=internasional' },
+  { label: 'Hukum Administrasi', href: '/cari?bidang=administrasi' },
 ];
 
 const helpItems = [
-  { label: 'Panduan Penggunaan', href: '/panduan', icon: BookOpen },
-  { label: 'Pertanyaan Umum (FAQ)', href: '/faq', icon: HelpCircle },
-  { label: 'Tentang VeriLex', href: '/tentang', icon: Info },
+  { label: 'Panduan Penggunaan', href: '/panduan' },
+  { label: 'Pertanyaan Umum (FAQ)', href: '/faq' },
+  { label: 'Tentang VeriLex', href: '/tentang' },
 ];
 
 export default function Sidebar() {
@@ -31,143 +31,112 @@ export default function Sidebar() {
   const { favorites } = useVeriLexStore();
 
   const isActive = (href: string) => {
+    if (href === '/' && pathname === '/') return true;
     if (href === '/cari' && pathname === '/cari') return true;
-    if (href !== '/cari' && pathname.startsWith(href)) return true;
+    if (href !== '/' && href !== '/cari' && pathname.startsWith(href)) return true;
     return false;
   };
 
   return (
     <aside
       style={{
-        width: '240px',
+        width: '180px',
         flexShrink: 0,
-        backgroundColor: '#FFFFFF',
-        borderRight: '1px solid #EAECF0',
+        backgroundColor: 'transparent',
+        padding: '1rem 0.5rem 2rem 0',
         minHeight: 'calc(100vh - 60px)',
         position: 'sticky',
         top: '60px',
-        overflowY: 'auto',
-        paddingBottom: '2rem',
+        alignSelf: 'flex-start',
       }}
     >
-      {/* Saved Favorites Section */}
-      <div style={{ padding: '1.25rem 0 0.5rem' }}>
+      {/* Navigation Section */}
+      <div style={{ marginBottom: '1.25rem' }}>
         <p style={{
+          fontWeight: 500,
+          fontSize: '0.75rem',
+          color: '#54595D',
+          borderBottom: '1px solid #E6E6E6',
+          paddingBottom: '0.125rem',
+          margin: '0 0.75rem 0.375rem',
           fontFamily: 'var(--font-body)',
-          fontWeight: 700,
-          fontSize: '0.6875rem',
-          color: 'var(--steel-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-          padding: '0 0.875rem',
-          marginBottom: '0.375rem',
         }}>
-          Pustaka Saya
+          Navigasi
         </p>
-        <Link
-          href="/favorit"
-          className={`nav-item ${pathname === '/favorit' ? 'active' : ''}`}
-          style={{ justifyContent: 'space-between' }}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Star size={14} fill={favorites.length > 0 ? 'var(--bronze)' : 'none'} color="var(--bronze)" />
-            Favorit Saya
-          </span>
-          <span style={{
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            backgroundColor: '#EAECF0',
-            color: 'var(--steel)',
-            borderRadius: '999px',
-            padding: '0.125rem 0.5rem',
-          }}>
-            {favorites.length}
-          </span>
-        </Link>
+        <ul className="vector-sidebar-list">
+          {mainNavigation.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={`vector-sidebar-link ${isActive(item.href) ? 'active' : ''}`}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+          <li>
+            <Link
+              href="/favorit"
+              className={`vector-sidebar-link ${pathname === '/favorit' ? 'active' : ''}`}
+            >
+              Favorit Saya ({favorites.length})
+            </Link>
+          </li>
+        </ul>
       </div>
 
-      <hr className="divider-h" style={{ margin: '0.5rem 0.875rem' }} />
-
-      {/* Browse Maxims Section */}
-      <div style={{ padding: '0.25rem 0 0.5rem' }}>
+      {/* Kategori Hukum Section */}
+      <div style={{ marginBottom: '1.25rem' }}>
         <p style={{
+          fontWeight: 500,
+          fontSize: '0.75rem',
+          color: '#54595D',
+          borderBottom: '1px solid #E6E6E6',
+          paddingBottom: '0.125rem',
+          margin: '0 0.75rem 0.375rem',
           fontFamily: 'var(--font-body)',
-          fontWeight: 700,
-          fontSize: '0.6875rem',
-          color: 'var(--steel-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-          padding: '0 0.875rem',
-          marginBottom: '0.375rem',
         }}>
-          Kategori Hukum
+          Portal Bidang
         </p>
-        {legalFieldItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`nav-item ${isActive(item.href) ? 'active' : ''}`}
-          >
-            <item.icon size={14} style={{ opacity: 0.6 }} />
-            {item.label}
-          </Link>
-        ))}
+        <ul className="vector-sidebar-list">
+          {legalFields.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={`vector-sidebar-link ${pathname === '/cari' && isActive(item.href) ? 'active' : ''}`}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <hr className="divider-h" style={{ margin: '0.5rem 0.875rem' }} />
-
-      {/* Learning Tools Section */}
-      <div style={{ padding: '0.25rem 0 0.5rem' }}>
+      {/* Bantuan Section */}
+      <div style={{ marginBottom: '1.25rem' }}>
         <p style={{
+          fontWeight: 500,
+          fontSize: '0.75rem',
+          color: '#54595D',
+          borderBottom: '1px solid #E6E6E6',
+          paddingBottom: '0.125rem',
+          margin: '0 0.75rem 0.375rem',
           fontFamily: 'var(--font-body)',
-          fontWeight: 700,
-          fontSize: '0.6875rem',
-          color: 'var(--steel-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-          padding: '0 0.875rem',
-          marginBottom: '0.375rem',
         }}>
-          Pembelajaran
+          Bantuan &amp; Info
         </p>
-        {learningItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`nav-item ${isActive(item.href) ? 'active' : ''}`}
-          >
-            <item.icon size={14} style={{ opacity: 0.6 }} />
-            {item.label}
-          </Link>
-        ))}
-      </div>
-
-      <hr className="divider-h" style={{ margin: '0.5rem 0.875rem' }} />
-
-      {/* Help & Info Section */}
-      <div style={{ padding: '0.25rem 0 0.5rem' }}>
-        <p style={{
-          fontFamily: 'var(--font-body)',
-          fontWeight: 700,
-          fontSize: '0.6875rem',
-          color: 'var(--steel-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-          padding: '0 0.875rem',
-          marginBottom: '0.375rem',
-        }}>
-          Informasi &amp; Bantuan
-        </p>
-        {helpItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`nav-item ${isActive(item.href) ? 'active' : ''}`}
-          >
-            <item.icon size={14} style={{ opacity: 0.6 }} />
-            {item.label}
-          </Link>
-        ))}
+        <ul className="vector-sidebar-list">
+          {helpItems.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={`vector-sidebar-link ${isActive(item.href) ? 'active' : ''}`}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
     </aside>
   );
