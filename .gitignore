@@ -3,3 +3,6 @@
 .impeccable/
 .DS_Store
 Frontend/
+node_modules/
+.next/
+*.tsbuildinfo
