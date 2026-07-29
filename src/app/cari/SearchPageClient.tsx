@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import { searchMaxims, legalFields } from '@/data/mockData';
@@ -20,9 +20,13 @@ const fieldLabels: Record<string, string> = {
 function SearchContent() {
   const searchParams = useSearchParams();
 
-  // Keep local state synced with URL params
+  // Derive URL-based values directly (no useEffect needed)
   const urlQuery  = searchParams.get('q')      || '';
   const urlBidang = searchParams.get('bidang') || '';
+
+  // Use a stable key derived from URL params so the component re-initializes
+  // local state when URL changes (React recommended pattern)
+  const paramKey = useMemo(() => `${urlQuery}|${urlBidang}`, [urlQuery, urlBidang]);
 
   const [inputValue,     setInputValue]     = useState(urlQuery);
   const [query,          setQuery]          = useState(urlQuery);
@@ -32,14 +36,14 @@ function SearchContent() {
   const [sortBy,           setSortBy]           = useState<SortOption>('relevansi');
   const [showMobileFilter, setShowMobileFilter] = useState(false);
 
-  // Sync state when URL params change (e.g., clicking sidebar or A-Z index)
-  useEffect(() => {
-    const q      = searchParams.get('q')      || '';
-    const bidang = searchParams.get('bidang') || '';
-    setInputValue(q);
-    setQuery(q);
-    setSelectedFields(bidang ? [bidang as LegalField] : []);
-  }, [searchParams]);
+  // Re-sync local state when URL params change by checking paramKey
+  const [prevParamKey, setPrevParamKey] = useState(paramKey);
+  if (paramKey !== prevParamKey) {
+    setPrevParamKey(paramKey);
+    setInputValue(urlQuery);
+    setQuery(urlQuery);
+    setSelectedFields(urlBidang ? [urlBidang as LegalField] : []);
+  }
 
   // Derive results during render (no useEffect needed)
   let results = searchMaxims(query, selectedFields);
