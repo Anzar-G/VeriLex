@@ -140,8 +140,8 @@ function SearchContent() {
         )}
       </aside>
 
-      {/* ── Main Content ───────────────────────────────────── */}
-      <main style={{ flex: 1, minWidth: 0, padding: '1.5rem 1.75rem', backgroundColor: '#F8F9FA' }}>
+      {/* ── Main Content ───────────────────────────────────────────────── */}
+      <main style={{ flex: 1, minWidth: 0, padding: '1rem', backgroundColor: '#F8F9FA' }}>
 
         {/* Search Bar */}
         <form onSubmit={handleSearch} role="search" style={{ marginBottom: '1.25rem' }}>
@@ -171,40 +171,67 @@ function SearchContent() {
           </div>
         </form>
 
-        {/* Mobile Filter Toggle */}
+        {/* Mobile Filter: Compact Bar */}
         <div className="lg:hidden" style={{ marginBottom: '1rem' }}>
           <button
             onClick={() => setShowMobileFilter(!showMobileFilter)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '0.4375rem 0.875rem', fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: '#202122', cursor: 'pointer', borderRadius: '2px' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '0.375rem 0.75rem', fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: '#202122', cursor: 'pointer', borderRadius: '2px' }}
             aria-expanded={showMobileFilter}
-            aria-label="Tampilkan opsi filter dan urutkan"
           >
-            <SlidersHorizontal size={14} />
+            <SlidersHorizontal size={13} />
             Filter &amp; Urutkan
             {selectedFields.length > 0 && (
-              <span style={{ backgroundColor: 'var(--navy)', color: 'white', borderRadius: '999px', padding: '0.0625rem 0.4375rem', fontSize: '0.6875rem', fontWeight: 700 }}>
+              <span style={{ backgroundColor: 'var(--navy)', color: 'white', borderRadius: '999px', padding: '0 0.375rem', fontSize: '0.625rem', fontWeight: 700 }}>
                 {selectedFields.length}
               </span>
             )}
-            <ChevronDown size={13} style={{ transform: showMobileFilter ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }} />
+            <ChevronDown size={12} style={{ transform: showMobileFilter ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }} />
           </button>
 
           {showMobileFilter && (
-            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1rem 1.25rem', marginTop: '0.375rem', borderRadius: '2px' }}>
-              <p style={{ fontWeight: 700, fontSize: '0.6875rem', color: '#54595D', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.625rem' }}>Bidang Hukum</p>
-              {legalFields.map(field => (
-                <label key={field.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4375rem', cursor: 'pointer' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={selectedFields.includes(field.id)} 
-                    onChange={() => toggleField(field.id)} 
-                    style={{ accentColor: 'var(--navy)' }} 
-                    aria-label={`Filter Hukum ${fieldLabels[field.id]} mobile`}
-                  />
-                  <span style={{ fontSize: '0.875rem' }}>{fieldLabels[field.id]}</span>
-                  <span style={{ fontSize: '0.75rem', color: '#72777D', marginLeft: 'auto' }}>{field.count}</span>
-                </label>
-              ))}
+            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '0.75rem 1rem', marginTop: '0.375rem' }}>
+              <p style={{ fontWeight: 700, fontSize: '0.625rem', color: '#54595D', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>Bidang Hukum</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '0.75rem' }}>
+                {legalFields.map(field => (
+                  <button
+                    key={field.id}
+                    onClick={() => toggleField(field.id)}
+                    style={{
+                      padding: '0.25rem 0.625rem',
+                      border: `1px solid ${selectedFields.includes(field.id) ? 'var(--navy)' : '#A2A9B1'}`,
+                      backgroundColor: selectedFields.includes(field.id) ? 'var(--navy)' : '#F8F9FA',
+                      color: selectedFields.includes(field.id) ? '#FFFFFF' : '#202122',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      borderRadius: '2px',
+                      fontFamily: 'var(--font-body)',
+                    }}
+                  >
+                    {fieldLabels[field.id]} ({field.count})
+                  </button>
+                ))}
+              </div>
+              <p style={{ fontWeight: 700, fontSize: '0.625rem', color: '#54595D', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.375rem' }}>Urutkan</p>
+              <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
+                {(['relevansi', 'abjad', 'terbaru'] as SortOption[]).map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => setSortBy(opt)}
+                    style={{
+                      padding: '0.25rem 0.625rem',
+                      border: `1px solid ${sortBy === opt ? '#3366CC' : '#A2A9B1'}`,
+                      backgroundColor: sortBy === opt ? '#3366CC' : '#F8F9FA',
+                      color: sortBy === opt ? '#FFFFFF' : '#202122',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      borderRadius: '2px',
+                      fontFamily: 'var(--font-body)',
+                    }}
+                  >
+                    {opt === 'relevansi' ? 'Relevansi' : opt === 'abjad' ? 'A–Z' : 'Terbaru'}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>

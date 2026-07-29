@@ -27,8 +27,8 @@ export default function HomepageClient() {
   return (
     <div className="container-page" style={{ display: 'flex', gap: '1rem' }}>
       
-      {/* ── Left Sidebar (Wikipedia Style) ── */}
-      <div className="hidden lg:block">
+      {/* ── Left Sidebar: CSS class handles mobile visibility ── */}
+      <div className="vector-sidebar">
         <Sidebar />
       </div>
 
@@ -38,10 +38,10 @@ export default function HomepageClient() {
           flex: 1,
           minWidth: 0,
           backgroundColor: '#FFFFFF',
-          borderLeft: '1px solid #A2A9B1',
-          padding: '1.25rem 1.5rem 3rem',
+          padding: '1rem 1rem 3rem',
           minHeight: 'calc(100vh - 46px)',
         }}
+        className="lg:border-l lg:border-[#A2A9B1] lg:pl-6"
       >
         {/* ── Wikipedia Vector Navigation Tabs ── */}
         <div className="vector-tabs-container">

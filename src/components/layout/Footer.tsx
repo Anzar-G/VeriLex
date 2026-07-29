@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { BookOpen } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -10,41 +9,28 @@ export default function Footer() {
         backgroundColor: '#F8F9FA',
         color: 'var(--steel-muted)',
         borderTop: '1px solid #A2A9B1',
-        padding: '2rem 0',
-        marginTop: '4rem',
+        padding: '1.5rem 0',
+        marginTop: '2rem',
         fontSize: '0.8125rem',
       }}
     >
-      <div
-        className="container-page"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1.25rem',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            flexWrap: 'wrap',
-            gap: '1.5rem',
-          }}
-        >
-          <div>
+      <div className="container-page">
+        <div className="footer-grid">
+          {/* Brand & Description */}
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <BookOpen size={16} color="var(--navy)" strokeWidth={2} />
+              <img src="/verilex-logo.png" alt="VeriLex" style={{ height: '20px', width: 'auto', borderRadius: '2px' }} />
               <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--navy)', fontSize: '0.9375rem' }}>
-                VeriLex — Ensiklopedia Maksim Hukum Latin
+                VeriLex
               </span>
             </div>
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8125rem', lineHeight: 1.5, maxWidth: '420px', margin: 0 }}>
-              Platform referensi independen untuk mahasiswa, akademisi, dan praktisi hukum di Indonesia. Didesain dengan asas keterbacaan tinggi dan keakuratan sumber ilmiah.
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8125rem', lineHeight: 1.5, margin: 0, maxWidth: '360px', wordBreak: 'break-word' }}>
+              Platform referensi independen untuk mahasiswa, akademisi, dan praktisi hukum di Indonesia.
             </p>
           </div>
 
-          <nav style={{ display: 'flex', gap: '2.5rem', flexWrap: 'wrap' }}>
+          {/* Navigation links */}
+          <nav className="footer-nav">
             <div>
               <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.8125rem', color: 'var(--navy)', marginBottom: '0.5rem' }}>Navigasi</p>
               {[
@@ -75,21 +61,13 @@ export default function Footer() {
 
         <hr className="divider-h" style={{ margin: '0.75rem 0' }} />
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '0.75rem',
-          }}
-        >
+        <div className="footer-bottom">
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', margin: 0 }}>
-            Teks tersedia di bawah lisensi terbuka referensi hukum Indonesia. Hak cipta milik kontributor.
+            Teks tersedia di bawah lisensi terbuka referensi hukum Indonesia.
           </p>
-          <div style={{ display: 'flex', gap: '1.25rem' }}>
-            <Link href="/tentang" className="wiki-link" style={{ fontSize: '0.75rem' }}>Tentang VeriLex</Link>
-            <Link href="/faq" className="wiki-link" style={{ fontSize: '0.75rem' }}>Penyangkalan Hukum</Link>
+          <div className="footer-bottom-links">
+            <Link href="/tentang" className="wiki-link" style={{ fontSize: '0.75rem' }}>Tentang</Link>
+            <Link href="/faq" className="wiki-link" style={{ fontSize: '0.75rem' }}>Penyangkalan</Link>
             <Link href="/panduan" className="wiki-link" style={{ fontSize: '0.75rem' }}>Panduan</Link>
           </div>
         </div>

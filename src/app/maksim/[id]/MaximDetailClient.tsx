@@ -158,8 +158,8 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* ── Left Sidebar (Wikipedia Style) ── */}
-      <div className="hidden lg:block">
+      {/* ── Left Sidebar: hidden on mobile, shown on lg+ via CSS class ── */}
+      <div className="vector-sidebar">
         <Sidebar />
       </div>
 
@@ -169,10 +169,11 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
           flex: 1,
           minWidth: 0,
           backgroundColor: '#FFFFFF',
-          borderLeft: '1px solid #A2A9B1',
-          padding: '1.25rem 1.5rem 3rem',
+          borderLeft: '0',
+          padding: '1rem 1rem 3rem',
           minHeight: 'calc(100vh - 46px)',
         }}
+        className="lg:border-l lg:border-[#A2A9B1] lg:pl-6"
       >
         {/* ── Vector Navigation & Action Tabs ── */}
         <div className="vector-tabs-container">
@@ -256,24 +257,19 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
                   </div>
                 </div>
               ))}
-              <div style={{ display: 'flex', gap: '0.375rem', marginTop: '0.5rem', justifyContent: 'center' }}>
-                <button
-                  onClick={handleAudio}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid #A2A9B1', background: '#F8F9FA', cursor: 'pointer' }}
-                >
+              <div className="wiki-infobox-actions">
+                <button onClick={handleAudio} className="wiki-infobox-btn">
                   <Volume2 size={11} /> {isPlaying ? 'Suara...' : 'Pelafalan'}
                 </button>
-                <button
-                  onClick={handleShare}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid #A2A9B1', background: '#F8F9FA', cursor: 'pointer' }}
-                >
+                <button onClick={handleShare} className="wiki-infobox-btn">
                   {copied ? 'Disalin!' : <><Share2 size={11} /> Bagikan</>}
                 </button>
               </div>
               {Object.keys(localOverride).length > 0 && (
                 <button
                   onClick={handleResetEdit}
-                  style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', padding: '0.25rem 0.5rem', fontSize: '0.7125rem', border: '1px solid #C85A54', background: '#FFF5F5', color: '#C85A54', cursor: 'pointer', marginTop: '0.375rem' }}
+                  className="wiki-infobox-btn"
+                  style={{ width: '100%', borderColor: '#C85A54', background: '#FFF5F5', color: '#C85A54', marginTop: '0.375rem' }}
                 >
                   <RotateCcw size={10} /> Kembalikan Asli
                 </button>
@@ -297,10 +293,11 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
               Prinsip ini memiliki peranan penting dalam perumusan logika hukum yudisial di Indonesia.
             </p>
 
-            {/* Table of Contents */}
-            <div className="wiki-toc">
-              <div style={{ fontWeight: 700, fontSize: '0.8125rem', textAlign: 'center', marginBottom: '0.375rem' }}>
-                Daftar isi
+            {/* Table of Contents — collapsible on mobile */}
+            <div className={`wiki-toc${tocExpanded ? '' : ' toc-collapsed'}`}>
+              <div className="wiki-toc-title" onClick={() => setTocExpanded(p => !p)}>
+                <span>Daftar isi</span>
+                <span style={{ fontSize: '0.7rem', color: '#0645AD', marginLeft: '0.5rem' }}>[{tocExpanded ? 'sembunyikan' : 'tampilkan'}]</span>
               </div>
               <ol style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.75rem', lineHeight: 1.8 }}>
                 <li><a href="#definisi" className="wiki-link">1 Makna Harfiah &amp; Etimologi</a></li>
@@ -315,39 +312,28 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
 
             <h2 id="definisi">Makna Harfiah &amp; Etimologi</h2>
             <WikiHR />
-            <div style={{ margin: '0.75rem 0 1.25rem' }}>
-              <div className="hidden sm:block">
-                <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.8125rem' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#F8F9FA', borderBottom: '1px solid #A2A9B1' }}>
-                      <th style={{ border: '1px solid #EAECF0', padding: '0.375rem 0.75rem', textAlign: 'left', fontWeight: 700 }}>Kosakata Latin</th>
-                      <th style={{ border: '1px solid #EAECF0', padding: '0.375rem 0.75rem', textAlign: 'left', fontWeight: 700 }}>Arti Tekstual</th>
+            {/* Single responsive table — no duplicate */}
+            <div style={{ margin: '0.75rem 0 1.25rem', overflowX: 'auto' }}>
+              <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.8125rem', minWidth: '220px' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#F8F9FA', borderBottom: '1px solid #A2A9B1' }}>
+                    <th style={{ border: '1px solid #EAECF0', padding: '0.375rem 0.75rem', textAlign: 'left', fontWeight: 700, whiteSpace: 'nowrap' }}>Kosakata Latin</th>
+                    <th style={{ border: '1px solid #EAECF0', padding: '0.375rem 0.75rem', textAlign: 'left', fontWeight: 700 }}>Arti Tekstual</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {maxim.wordByWord.map((w, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid #EAECF0' }}>
+                      <td style={{ padding: '0.375rem 0.75rem', fontFamily: 'var(--font-display)', fontStyle: 'italic', fontWeight: 700, color: 'var(--navy)', whiteSpace: 'nowrap' }}>
+                        {w.word}
+                      </td>
+                      <td style={{ padding: '0.375rem 0.75rem', color: '#202122' }}>
+                        {w.meaning}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {maxim.wordByWord.map((w, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #EAECF0' }}>
-                        <td style={{ padding: '0.375rem 0.75rem', fontFamily: 'var(--font-display)', fontStyle: 'italic', fontWeight: 700, color: 'var(--navy)' }}>
-                          {w.word}
-                        </td>
-                        <td style={{ padding: '0.375rem 0.75rem', color: '#202122' }}>
-                          {w.meaning}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="sm:hidden" style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-                {maxim.wordByWord.map((w, i) => (
-                  <div key={i} style={{ padding: '0.5rem 0.75rem', border: '1px solid #EAECF0', backgroundColor: '#F8F9FA' }}>
-                    <span style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontWeight: 700, color: 'var(--navy)' }}>{w.word}</span>
-                    {' '}&ndash;{' '}
-                    <span style={{ fontSize: '0.75rem', color: '#202122' }}>{w.meaning}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             <h2 id="penerapan">Penerapan &amp; Logika Hukum</h2>
