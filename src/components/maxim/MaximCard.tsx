@@ -68,7 +68,7 @@ export default function MaximCard({ maxim, compact = false }: MaximCardProps) {
         </div>
 
         {/* Indonesian meaning */}
-        <p style={{
+        <p suppressHydrationWarning style={{
           fontFamily: 'var(--font-body)',
           fontSize: '0.875rem',
           color: '#54595D',

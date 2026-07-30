@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import MaximDetailClient from './MaximDetailClient';
+import MaximDetailWrapper from './MaximDetailWrapper';
 import { getMaximById, mockMaxims } from '@/data/mockData';
 
 interface Props {
@@ -44,7 +44,7 @@ export default async function MaximDetailPage({ params }: Props) {
   return (
     <>
       <Header />
-      <MaximDetailClient maxim={maxim} />
+      <MaximDetailWrapper maxim={maxim!} />
       <Footer />
     </>
   );
