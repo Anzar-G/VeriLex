@@ -6,3 +6,10 @@ Frontend/
 node_modules/
 .next/
 *.tsbuildinfo
+
+# Environment variables (contain secrets)
+.env.local
+.env*.local
+
+# Seed scripts contain service_role key — do not commit
+scripts/seed-supabase.mjs

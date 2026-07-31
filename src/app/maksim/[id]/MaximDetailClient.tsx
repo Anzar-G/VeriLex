@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Star, Volume2, Share2, RotateCcw, Edit2, MessageSquare } from 'lucide-react';
+import { Star, Volume2, Share2, RotateCcw, MessageSquare } from 'lucide-react';
 import type { Maxim } from '@/types';
 import Sidebar from '@/components/layout/Sidebar';
 import { useVeriLexStore } from '@/lib/useStore';
+import MaximEditor from '@/components/edit/MaximEditor';
 
 const fieldLabels: Record<string, string> = {
   'umum': 'Asas Umum & Penafsiran',
@@ -58,29 +59,25 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
   const isFav = favorites.includes(initialMaxim.id);
   const [isPlaying, setIsPlaying] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // ── Track page view for "Banyak Dibaca" counter ────────────────────────
+  useEffect(() => {
+    fetch(`/api/maxims/${initialMaxim.id}/view`, { method: 'POST' }).catch(() => {
+      // silently ignore — view tracking is non-critical
+    });
+  }, [initialMaxim.id]);
   const [tocExpanded, setTocExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState<'baca' | 'diskusi' | 'sunting'>('baca');
 
-  const localOverride = editedMaxims[initialMaxim.id] || {};
-  const maxim: Maxim = {
-    ...initialMaxim,
-    ...localOverride,
-    latinPhrase: localOverride.latinPhrase || initialMaxim.latinPhrase,
-    pronunciationGuide: localOverride.pronunciationGuide || initialMaxim.pronunciationGuide,
-    literalTranslation: localOverride.literalTranslation || initialMaxim.literalTranslation,
-    indonesianMeaning: localOverride.indonesianMeaning || initialMaxim.indonesianMeaning,
-    legalMeaning: localOverride.legalMeaning || initialMaxim.legalMeaning,
-  };
+  // ── State: live maxim (updated after a successful global save) ──────────
+  const [liveMaxim, setLiveMaxim] = useState<Maxim>(initialMaxim);
+  const maxim = liveMaxim;
 
   const localNote = notes[maxim.id] || '';
   const [noteText, setNoteText] = useState(localNote);
   const [noteSaved, setNoteSaved] = useState(false);
-  const [editLatin, setEditLatin] = useState(maxim.latinPhrase);
-  const [editFonetis, setEditFonetis] = useState(maxim.pronunciationGuide);
-  const [editLiteral, setEditLiteral] = useState(maxim.literalTranslation);
-  const [editIndo, setEditIndo] = useState(maxim.indonesianMeaning);
-  const [editLegal, setEditLegal] = useState(maxim.legalMeaning);
-  const [editSaved, setEditSaved] = useState(false);
+  // legacy local edit state — kept only for the "Kembalikan Asli" infobox indicator
+  const localOverride = editedMaxims[initialMaxim.id] || {};
 
   const handleAudio = () => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -106,18 +103,11 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
     setNoteSaved(true); setTimeout(() => setNoteSaved(false), 2500);
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateMaxim(maxim.id, { latinPhrase: editLatin, pronunciationGuide: editFonetis, literalTranslation: editLiteral, indonesianMeaning: editIndo, legalMeaning: editLegal });
-    setEditSaved(true); setActiveTab('baca'); setTimeout(() => setEditSaved(false), 2500);
-  };
-
   const handleResetEdit = () => {
     if (confirm('Kembalikan artikel ke versi rujukan asli?')) {
       resetMaxim(maxim.id);
-      setEditLatin(initialMaxim.latinPhrase); setEditFonetis(initialMaxim.pronunciationGuide);
-      setEditLiteral(initialMaxim.literalTranslation); setEditIndo(initialMaxim.indonesianMeaning);
-      setEditLegal(initialMaxim.legalMeaning); setActiveTab('baca');
+      setLiveMaxim(initialMaxim);
+      setActiveTab('baca');
     }
   };
 
@@ -197,11 +187,6 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
           </div>
         </div>
 
-        {editSaved && (
-          <div style={{ backgroundColor: 'rgba(46, 125, 50, 0.08)', border: '1px solid var(--success)', padding: '0.5rem 0.75rem', fontSize: '0.8125rem', marginBottom: '1rem', color: 'var(--success)' }}>
-            Perubahan lokal berhasil disimpan.
-          </div>
-        )}
 
         {/* ══ TAB: BACA ══ */}
         {activeTab === 'baca' && (
@@ -948,44 +933,11 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
 
         {/* ══ TAB: SUNTING ══ */}
         {activeTab === 'sunting' && (
-          <div style={{ padding: '0.5rem 0' }}>
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', margin: '0 0 1rem', padding: 0 }}>
-              <Edit2 size={20} color="var(--navy)" /> Sunting Ensiklopedia (Suntingan Lokal)
-            </h2>
-            <p style={{ color: '#54595D', fontSize: '0.8125rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-              Anda dapat langsung menyunting penjelasan literal, fonetis, atau ulasan asas ini untuk menyesuaikan referensi belajar Anda.
-            </p>
-            <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div>
-                <label htmlFor="edit-latin" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#54595D', marginBottom: '0.25rem' }}>Frase Latin Asli:</label>
-                <input type="text" id="edit-latin" value={editLatin} onChange={e => setEditLatin(e.target.value)} className="input-text" />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label htmlFor="edit-fonetis" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#54595D', marginBottom: '0.25rem' }}>Panduan Fonetis:</label>
-                  <input type="text" id="edit-fonetis" value={editFonetis} onChange={e => setEditFonetis(e.target.value)} className="input-text" />
-                </div>
-                <div>
-                  <label htmlFor="edit-literal" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#54595D', marginBottom: '0.25rem' }}>Arti Literal:</label>
-                  <input type="text" id="edit-literal" value={editLiteral} onChange={e => setEditLiteral(e.target.value)} className="input-text" />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="edit-indo" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#54595D', marginBottom: '0.25rem' }}>Arti Resmi Bahasa Indonesia:</label>
-                <input type="text" id="edit-indo" value={editIndo} onChange={e => setEditIndo(e.target.value)} className="input-text" />
-              </div>
-              <div>
-                <label htmlFor="edit-legal" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#54595D', marginBottom: '0.25rem' }}>Penjelasan & Analisis Hukum:</label>
-                <textarea id="edit-legal" value={editLegal} onChange={e => setEditLegal(e.target.value)}
-                  style={{ width: '100%', height: '180px', padding: '0.5rem 0.75rem', border: '1px solid #A2A9B1', borderRadius: '2px', fontSize: '0.875rem', fontFamily: 'var(--font-body)', outline: 'none' }} />
-              </div>
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <button type="submit" className="btn-primary">Simpan Suntingan</button>
-                <button type="button" onClick={handleResetEdit} className="btn-secondary" style={{ borderColor: '#C85A54', color: '#C85A54' }}>Kembalikan ke Asli</button>
-                <button type="button" onClick={() => setActiveTab('baca')} className="btn-secondary">Batal</button>
-              </div>
-            </form>
-          </div>
+          <MaximEditor
+            maxim={maxim}
+            onSaved={(updated) => { setLiveMaxim(updated); setActiveTab('baca'); }}
+            onCancel={() => setActiveTab('baca')}
+          />
         )}
 
       </div>

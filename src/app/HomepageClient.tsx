@@ -7,6 +7,7 @@ import { Search, Brain, BookMarked, Star, ArrowRight, Scale, Scroll, Globe, Book
 import { legalFields, mockMaxims } from '@/data/mockData';
 import Sidebar from '@/components/layout/Sidebar';
 import { useVeriLexStore } from '@/lib/useStore';
+import { useFeatured, usePopular, useRecent, rowToMaxim, type MaximSummary } from '@/hooks/useHomepageData';
 
 // ── Field icon mapping ──────────────────────────────────────────
 const fieldIcons: Record<string, React.ElementType> = {
@@ -65,6 +66,11 @@ export default function HomepageClient() {
   const [activeQuote, setActiveQuote] = useState(0);
   const { favorites } = useVeriLexStore();
 
+  // ── Dynamic data from Supabase ──────────────────────────────────────────
+  const { data: featuredRow, loading: featuredLoading } = useFeatured();
+  const { data: popularList, loading: popularLoading }  = usePopular(2);
+  const { data: recentList,  loading: recentLoading  }  = useRecent(6);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -72,10 +78,25 @@ export default function HomepageClient() {
     }
   };
 
-  const featuredMaxim = mockMaxims.find(m => m.id === 'lex-posterior') || mockMaxims[0];
-  const secondMaxim   = mockMaxims.find(m => m.id === 'lex-specialis') || mockMaxims[1];
-  const recentMaxims  = mockMaxims.slice(0, 6);
-  const quote         = heroQuotes[activeQuote];
+  // Fallback to static data while loading or if DB is empty
+  const staticFeatured = mockMaxims.find(m => m.id === 'lex-posterior') || mockMaxims[0];
+  const staticSecond   = mockMaxims.find(m => m.id === 'lex-specialis') || mockMaxims[1];
+
+  const featuredMaxim = featuredRow ? rowToMaxim(featuredRow) : staticFeatured;
+
+  // "Banyak dibaca" — second entry from popular, fallback to staticSecond
+  const secondPopular = popularList[1];
+  const secondMaxim = secondPopular
+    ? { id: secondPopular.id, latinPhrase: secondPopular.latin_phrase, indonesianMeaning: secondPopular.indonesian_meaning, literalTranslation: secondPopular.literal_translation, legalFields: secondPopular.legal_fields, legalMeaning: secondPopular.indonesian_meaning }
+    : staticSecond;
+
+  // Card grid — recent edits from DB, fallback to static
+  const recentCardData: Array<{ id: string; latinPhrase: string; indonesianMeaning: string; legalFields: string[]; updatedAt?: string }> =
+    recentList.length > 0
+      ? recentList.map(r => ({ id: r.id, latinPhrase: r.latin_phrase, indonesianMeaning: r.indonesian_meaning, legalFields: r.legal_fields, updatedAt: r.updated_at }))
+      : mockMaxims.slice(0, 6).map(m => ({ id: m.id, latinPhrase: m.latinPhrase, indonesianMeaning: m.indonesianMeaning, legalFields: m.legalFields, updatedAt: m.updatedAt }));
+
+  const quote = heroQuotes[activeQuote];
 
   return (
     <div className="container-page" style={{ display: 'flex', gap: '1rem' }}>
@@ -406,6 +427,9 @@ export default function HomepageClient() {
                   Juga banyak dibaca
                 </h2>
               </div>
+              {popularLoading ? (
+                <div style={{ padding: '1rem', textAlign: 'center', color: '#72777D', fontSize: '0.8125rem' }}>Memuat...</div>
+              ) : (
               <div style={{ padding: '1rem' }}>
                 <Link href={`/maksim/${secondMaxim.id}`} style={{ textDecoration: 'none' }}>
                   <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', color: '#0645AD', margin: '0 0 0.25rem', lineHeight: 1.3 }}>
@@ -418,12 +442,13 @@ export default function HomepageClient() {
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: '#202122', lineHeight: 1.55, margin: '0 0 0.625rem',
                   display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden'
                 }}>
-                  {secondMaxim.legalMeaning.split('\n\n')[0]?.substring(0, 200)}...
+                  {secondMaxim.legalMeaning?.split('\n\n')[0]?.substring(0, 200)}...
                 </p>
                 <Link href={`/maksim/${secondMaxim.id}`} className="wiki-link" style={{ fontSize: '0.75rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
                   Baca selengkapnya <ArrowRight size={11} />
                 </Link>
               </div>
+              )}
             </section>
           </div>
         </div>
@@ -441,7 +466,11 @@ export default function HomepageClient() {
             </Link>
           </div>
           <div style={{ padding: '0.875rem', display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '0.625rem' }} className="sm:grid-cols-2 lg:grid-cols-3">
-            {recentMaxims.map(maxim => {
+            {recentLoading
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} style={{ border: '1px solid #EAECF0', borderTop: '3px solid #EAECF0', padding: '0.875rem', height: '120px', backgroundColor: '#F8F9FA', borderRadius: '2px' }} />
+                ))
+              : recentCardData.map(maxim => {
               const primaryField = maxim.legalFields[0];
               const c = fieldColors[primaryField] || fieldColors['umum'];
               return (
@@ -481,6 +510,11 @@ export default function HomepageClient() {
                     <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', color: '#54595D', fontStyle: 'italic', margin: '0 0 0.5rem', lineHeight: 1.4 }}>
                       &ldquo;{maxim.indonesianMeaning.substring(0, 80)}{maxim.indonesianMeaning.length > 80 ? '...' : ''}&rdquo;
                     </p>
+                    {maxim.updatedAt && (
+                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.625rem', color: '#A2A9B1', margin: '0 0 0.375rem' }}>
+                        Diperbarui: {new Date(maxim.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', color: '#0645AD', fontSize: '0.75rem', fontWeight: 600, marginTop: 'auto' }}>
                       Baca <ArrowRight size={10} />
                     </div>
