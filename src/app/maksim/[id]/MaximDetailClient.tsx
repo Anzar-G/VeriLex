@@ -8,11 +8,17 @@ import Sidebar from '@/components/layout/Sidebar';
 import { useVeriLexStore } from '@/lib/useStore';
 
 const fieldLabels: Record<string, string> = {
-  'pidana': 'Hukum Pidana',
-  'perdata': 'Hukum Perdata',
-  'tata-negara': 'Hukum Tata Negara',
-  'internasional': 'Hukum Internasional',
-  'administrasi': 'Hukum Administrasi',
+  'umum': 'Asas Umum & Penafsiran',
+  'pidana': 'Pidana & Acara Pidana',
+  'perdata': 'Perdata & Kontrak',
+  'properti': 'Hak Milik & Benda',
+  'keluarga': 'Waris & Keluarga',
+  'bisnis': 'Dagang & Korporasi',
+  'internasional': 'Internasional & HAM',
+  'tata-negara': 'Administrasi & Tata Negara',
+  'acara': 'Acara Perdata & Pembuktian',
+  'lain-lain': 'Lain-lain & Filosofis',
+  'administrasi': 'Administrasi',
 };
 
 const relationTypeLabels: Record<string, string> = {

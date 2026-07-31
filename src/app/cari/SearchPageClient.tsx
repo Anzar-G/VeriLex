@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import { searchMaxims, legalFields } from '@/data/mockData';
@@ -10,10 +10,16 @@ import MaximCard from '@/components/maxim/MaximCard';
 type SortOption = 'relevansi' | 'abjad' | 'terbaru';
 
 const fieldLabels: Record<string, string> = {
-  'pidana': 'Pidana',
-  'perdata': 'Perdata',
-  'tata-negara': 'Tata Negara',
-  'internasional': 'Internasional',
+  'umum': 'Asas Umum & Penafsiran',
+  'pidana': 'Pidana & Acara Pidana',
+  'perdata': 'Perdata & Kontrak',
+  'properti': 'Hak Milik & Benda',
+  'keluarga': 'Waris & Keluarga',
+  'bisnis': 'Dagang & Korporasi',
+  'internasional': 'Internasional & HAM',
+  'tata-negara': 'Administrasi & Tata Negara',
+  'acara': 'Acara Perdata & Pembuktian',
+  'lain-lain': 'Lain-lain & Filosofis',
   'administrasi': 'Administrasi',
 };
 
@@ -35,6 +41,11 @@ function SearchContent() {
   );
   const [sortBy,           setSortBy]           = useState<SortOption>('relevansi');
   const [showMobileFilter, setShowMobileFilter] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
 
   // Re-sync local state when URL params change by checking paramKey
   const [prevParamKey, setPrevParamKey] = useState(paramKey);
@@ -43,6 +54,7 @@ function SearchContent() {
     setInputValue(urlQuery);
     setQuery(urlQuery);
     setSelectedFields(urlBidang ? [urlBidang as LegalField] : []);
+    setCurrentPage(1);
   }
 
   // Derive results during render (no useEffect needed)
@@ -54,6 +66,22 @@ function SearchContent() {
       new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
   }
+
+  // Reset pagination if filters/query change
+  const [prevQuery, setPrevQuery] = useState(query);
+  const [prevFields, setPrevFields] = useState(selectedFields);
+  const [prevSortBy, setPrevSortBy] = useState(sortBy);
+
+  if (query !== prevQuery || selectedFields !== prevFields || sortBy !== prevSortBy) {
+    setPrevQuery(query);
+    setPrevFields(selectedFields);
+    setPrevSortBy(sortBy);
+    setCurrentPage(1);
+  }
+
+  const ITEMS_PER_PAGE = 10;
+  const totalPages = Math.ceil(results.length / ITEMS_PER_PAGE);
+  const paginatedResults = results.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,11 +304,54 @@ function SearchContent() {
 
         {/* Results */}
         {results.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {results.map((maxim) => (
-              <MaximCard key={maxim.id} maxim={maxim} />
-            ))}
-          </div>
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {paginatedResults.map((maxim) => (
+                <MaximCard key={maxim.id} maxim={maxim} />
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem', padding: '1rem 0' }}>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  style={{
+                    padding: '0.375rem 0.75rem',
+                    border: '1px solid #A2A9B1',
+                    backgroundColor: '#FFFFFF',
+                    color: currentPage === 1 ? '#72777D' : '#202122',
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    borderRadius: '2px',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '0.8125rem',
+                  }}
+                >
+                  Sebelumnya
+                </button>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: '#202122', margin: '0 0.5rem' }}>
+                  Halaman {currentPage} dari {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    padding: '0.375rem 0.75rem',
+                    border: '1px solid #A2A9B1',
+                    backgroundColor: '#FFFFFF',
+                    color: currentPage === totalPages ? '#72777D' : '#202122',
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    borderRadius: '2px',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '0.8125rem',
+                  }}
+                >
+                  Selanjutnya
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '3rem 2rem', textAlign: 'center' }}>
             <p style={{ fontFamily: 'var(--font-display)', fontSize: '1.125rem', color: 'var(--navy)', marginBottom: '0.5rem' }}>

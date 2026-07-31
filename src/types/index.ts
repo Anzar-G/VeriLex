@@ -1,6 +1,6 @@
 // VeriLex TypeScript Type Definitions — Standar Halaman v2.0
 
-export type LegalField = 'pidana' | 'perdata' | 'tata-negara' | 'internasional' | 'administrasi';
+export type LegalField = 'umum' | 'pidana' | 'perdata' | 'properti' | 'keluarga' | 'bisnis' | 'internasional' | 'tata-negara' | 'acara' | 'lain-lain' | 'administrasi';
 
 // ─────────────────────────────────────────
 // Section 2: Classification

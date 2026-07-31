@@ -11,18 +11,30 @@ interface MaximCardProps {
 }
 
 const fieldColors: Record<string, string> = {
+  'umum': '#3F51B5',
   'pidana': '#C85A54',
   'perdata': '#5B7A94',
-  'tata-negara': '#6B8E71',
+  'properti': '#E91E63',
+  'keluarga': '#9C27B0',
+  'bisnis': '#FF9800',
   'internasional': '#A67C52',
+  'tata-negara': '#6B8E71',
+  'acara': '#009688',
+  'lain-lain': '#795548',
   'administrasi': '#7B68AA',
 };
 
 const fieldLabels: Record<string, string> = {
-  'pidana': 'Pidana',
-  'perdata': 'Perdata',
-  'tata-negara': 'Tata Negara',
-  'internasional': 'Internasional',
+  'umum': 'Asas Umum & Penafsiran',
+  'pidana': 'Pidana & Acara Pidana',
+  'perdata': 'Perdata & Kontrak',
+  'properti': 'Hak Milik & Benda',
+  'keluarga': 'Waris & Keluarga',
+  'bisnis': 'Dagang & Korporasi',
+  'internasional': 'Internasional & HAM',
+  'tata-negara': 'Administrasi & Tata Negara',
+  'acara': 'Acara Perdata & Pembuktian',
+  'lain-lain': 'Lain-lain & Filosofis',
   'administrasi': 'Administrasi',
 };
 

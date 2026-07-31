@@ -1,15 +1,22 @@
 import type { Maxim, LegalFieldMeta, QuizQuestion, UserProgress } from '@/types';
+import { newMaxims200 } from './maxims200';
 
 // ─────────────────────────────────────────
 // Legal Fields Metadata
 // ─────────────────────────────────────────
 
 export const legalFields: LegalFieldMeta[] = [
-  { id: 'pidana', label: 'Hukum Pidana', count: 23, description: 'Maksim yang berkaitan dengan hukum pidana dan kejahatan' },
-  { id: 'perdata', label: 'Hukum Perdata', count: 31, description: 'Maksim yang berkaitan dengan hukum perdata dan kontrak' },
-  { id: 'tata-negara', label: 'Tata Negara', count: 12, description: 'Maksim yang berkaitan dengan hukum tata negara' },
-  { id: 'internasional', label: 'Hukum Internasional', count: 8, description: 'Maksim yang berkaitan dengan hukum internasional' },
-  { id: 'administrasi', label: 'Hukum Administrasi', count: 14, description: 'Maksim yang berkaitan dengan hukum administrasi negara' },
+  { id: 'umum', label: 'Asas Umum & Penafsiran', count: 20, description: 'Asas Umum & Penafsiran Hukum' },
+  { id: 'pidana', label: 'Hukum Pidana & Acara Pidana', count: 43, description: 'Hukum Pidana & Acara Pidana' },
+  { id: 'perdata', label: 'Hukum Perdata & Kontrak', count: 51, description: 'Hukum Perdata & Kontrak' },
+  { id: 'properti', label: 'Hak Milik & Benda', count: 15, description: 'Hak Milik & Benda (Property Law)' },
+  { id: 'keluarga', label: 'Waris & Keluarga', count: 15, description: 'Waris & Keluarga (Succession & Family Law)' },
+  { id: 'bisnis', label: 'Hukum Dagang & Korporasi', count: 15, description: 'Hukum Dagang & Korporasi' },
+  { id: 'internasional', label: 'Hukum Internasional & HAM', count: 23, description: 'Hukum Internasional & HAM' },
+  { id: 'tata-negara', label: 'Hukum Administrasi & Tata Negara', count: 27, description: 'Hukum Administrasi & Tata Negara' },
+  { id: 'acara', label: 'Hukum Acara Perdata & Pembuktian', count: 15, description: 'Hukum Acara Perdata & Pembuktian' },
+  { id: 'lain-lain', label: 'Maksim Lain-Lain & Filosofis', count: 50, description: 'Maksim Lain-Lain & Filosofis' },
+  { id: 'administrasi', label: 'Hukum Administrasi', count: 14, description: 'Maksim yang berkaitan dengan hukum administrasi negara' }
 ];
 
 // ─────────────────────────────────────────
@@ -17,6 +24,7 @@ export const legalFields: LegalFieldMeta[] = [
 // ─────────────────────────────────────────
 
 export const mockMaxims: Maxim[] = [
+  ...newMaxims200,
   {
     id: 'lex-posterior',
     latinPhrase: 'Lex Posterior Derogat Legi Priori',
@@ -1170,10 +1178,16 @@ export const mockUserProgress: UserProgress = {
   averageScore: 78,
   streakDays: 5,
   progressByField: {
+    'umum': 50,
     'pidana': 60,
     'perdata': 40,
-    'tata-negara': 80,
+    'properti': 30,
+    'keluarga': 10,
+    'bisnis': 20,
     'internasional': 20,
+    'tata-negara': 80,
+    'acara': 0,
+    'lain-lain': 0,
     'administrasi': 90,
   },
   flashcardLevels: {
