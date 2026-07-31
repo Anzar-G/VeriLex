@@ -29,6 +29,7 @@ export default function Header() {
   };
 
   const isHomepage = pathname === '/';
+  const isSearchPage = pathname === '/cari';
 
   return (
     <header
@@ -88,7 +89,7 @@ export default function Header() {
 
         {/* Search Bar */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-          {!isHomepage && (
+          {!isHomepage && !isSearchPage && (
             <form
               onSubmit={handleSearchSubmit}
               style={{ width: '100%', maxWidth: '360px' }}
