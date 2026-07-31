@@ -9,6 +9,9 @@ import { useVeriLexStore, hasMinRole } from '@/lib/useStore';
 import MaximEditor from '@/components/edit/MaximEditor';
 import RevisionHistory from '@/components/edit/RevisionHistory';
 import ReportButton from '@/components/report/ReportButton';
+import KnowledgeGraph from '@/components/maxim/KnowledgeGraph';
+import SourceList from '@/components/maxim/SourceList';
+import { ArticleMetaBar } from '@/components/maxim/ArticleBadges';
 
 const fieldLabels: Record<string, string> = {
   'umum': 'Asas Umum & Penafsiran',
@@ -154,13 +157,14 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
     { id: 'analisis', label: '19 Analisis Akademik' },
     { id: 'ahli', label: '20 Pandangan Para Ahli' },
     { id: 'kontroversi', label: '21 Kontroversi' },
-    { id: 'kesalahan', label: '22 Kesalahan Umum' },
-    { id: 'faq', label: '23 FAQ' },
-    { id: 'catatan', label: '24 Catatan' },
-    { id: 'istilah', label: '25 Istilah Berkaitan' },
-    { id: 'lihat-juga', label: '26 Lihat Juga' },
-    { id: 'referensi', label: '27 Referensi' },
-    { id: 'bacaan', label: '28 Bacaan Lanjutan' },
+    { id: 'kesalahan',      label: '22 Kesalahan Umum' },
+    { id: 'faq',            label: '23 FAQ' },
+    { id: 'catatan',        label: '24 Catatan' },
+    { id: 'istilah',        label: '25 Istilah Berkaitan' },
+    { id: 'lihat-juga',     label: '26 Lihat Juga' },
+    { id: 'knowledge-graph', label: '26b Peta Hubungan Antar Asas' },
+    { id: 'referensi',      label: '27 Referensi' },
+    { id: 'bacaan',         label: '28 Bacaan Lanjutan' },
   ];
 
   const h2Style = { fontSize: '1rem', fontWeight: 700, color: '#202122', borderBottom: 'none', margin: '1.5rem 0 0' };
@@ -233,6 +237,14 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
             {/* ── Article Title ── */}
             <h1 className="text-wrap-safe">{maxim.latinPhrase}</h1>
             <span className="wiki-tagline">Dari VeriLex, ensiklopedia maksim hukum bebas</span>
+
+            {/* ── Article Meta Bar (difficulty, status, version) ── */}
+            <ArticleMetaBar
+              difficulty={(maxim as unknown as Record<string, string>).difficulty}
+              status={(maxim as unknown as Record<string, string>).status}
+              version={(maxim as unknown as Record<string, number>).version_number}
+              updatedAt={maxim.updatedAt}
+            />
 
             {/* ── Lead Paragraph (flows left of float-right infobox) ── */}
             <p style={{ fontSize: '0.875rem', lineHeight: 1.7, color: '#202122', margin: '0.5rem 0 0.5rem' }}>
@@ -773,11 +785,19 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
               </>
             )}
 
+            {/* ── Knowledge Graph (dari database) ── */}
+            <h2 id="knowledge-graph" style={h2Style}>Peta Hubungan Antar Asas</h2>
+            <WikiHR />
+            <KnowledgeGraph maximId={maxim.id} maximLatinPhrase={maxim.latinPhrase} />
+
             {/* ═══════════════════════════════════════ */}
             {/* SEKSI 27: Referensi */}
             {/* ═══════════════════════════════════════ */}
             <h2 id="referensi" style={h2Style}>Referensi</h2>
             <WikiHR />
+
+            {/* ── Referensi terverifikasi dari database ── */}
+            <SourceList maximId={maxim.id} />
             {maxim.references ? (
               <div style={{ margin: '0.5rem 0 1.25rem', fontSize: '0.8125rem' }}>
                 {maxim.references.primary && (

@@ -55,8 +55,8 @@ export default function LoginClient() {
       });
     }
 
-    // Always redirect — never leave user stuck on loading
-    router.push('/');
+    // Always redirect — use window.location for reliable full navigation after auth
+    window.location.href = '/';
   }
 
   return (
