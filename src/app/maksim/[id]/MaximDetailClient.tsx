@@ -8,6 +8,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import { useVeriLexStore, hasMinRole } from '@/lib/useStore';
 import MaximEditor from '@/components/edit/MaximEditor';
 import RevisionHistory from '@/components/edit/RevisionHistory';
+import ReportButton from '@/components/report/ReportButton';
 
 const fieldLabels: Record<string, string> = {
   'umum': 'Asas Umum & Penafsiran',
@@ -911,6 +912,11 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
                   ))}
                 </>
               )}
+            </div>
+
+            {/* ── Report button ── */}
+            <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <ReportButton maximId={maxim.id} />
             </div>
           </>
         )}

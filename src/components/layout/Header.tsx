@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Search, Menu, X, LogIn, LogOut, User, ChevronDown } from 'lucide-react';
-import { useVeriLexStore, ROLE_LABELS, ROLE_COLORS } from '@/lib/useStore';
+import { useVeriLexStore, ROLE_LABELS, ROLE_COLORS, hasMinRole } from '@/lib/useStore';
 
 export default function Header() {
   const router = useRouter();
@@ -101,6 +101,8 @@ export default function Header() {
                     { href: '/kontribusi', label: 'Kontribusi Saya' },
                     { href: '/favorit', label: `Favorit (${favorites.length})` },
                     { href: '/dashboard', label: 'Dashboard' },
+                    ...(authUser && hasMinRole(authUser.role, 'reviewer') ? [{ href: '/reviewer', label: 'Dashboard Reviewer' }] : []),
+                    ...(authUser && hasMinRole(authUser.role, 'administrator') ? [{ href: '/admin', label: 'Admin Panel' }] : []),
                   ].map(item => (
                     <Link key={item.href} href={item.href}
                       onClick={() => setUserMenuOpen(false)}

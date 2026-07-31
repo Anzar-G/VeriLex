@@ -18,30 +18,50 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     supabase.auth.getSession().then(async ({ data }) => {
       const user = data.session?.user;
       if (user) {
-        const { profile, role } = await getUserProfile(user.id);
-        setAuthUser({
-          id: user.id,
-          email: user.email!,
-          username: profile?.username || user.email!.split('@')[0],
-          displayName: profile?.display_name || user.email!.split('@')[0],
-          role: role as UserRole,
-          avatarUrl: profile?.avatar_url,
-        });
+        try {
+          const { profile, role } = await getUserProfile(user.id);
+          setAuthUser({
+            id: user.id,
+            email: user.email!,
+            username: profile?.username || user.email!.split('@')[0],
+            displayName: profile?.display_name || user.email!.split('@')[0],
+            role: (role as UserRole) || 'contributor',
+            avatarUrl: profile?.avatar_url,
+          });
+        } catch {
+          setAuthUser({
+            id: user.id,
+            email: user.email!,
+            username: user.email!.split('@')[0],
+            displayName: user.email!.split('@')[0],
+            role: 'contributor',
+          });
+        }
       }
     });
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        const { profile, role } = await getUserProfile(session.user.id);
-        setAuthUser({
-          id: session.user.id,
-          email: session.user.email!,
-          username: profile?.username || session.user.email!.split('@')[0],
-          displayName: profile?.display_name || session.user.email!.split('@')[0],
-          role: role as UserRole,
-          avatarUrl: profile?.avatar_url,
-        });
+        try {
+          const { profile, role } = await getUserProfile(session.user.id);
+          setAuthUser({
+            id: session.user.id,
+            email: session.user.email!,
+            username: profile?.username || session.user.email!.split('@')[0],
+            displayName: profile?.display_name || session.user.email!.split('@')[0],
+            role: (role as UserRole) || 'contributor',
+            avatarUrl: profile?.avatar_url,
+          });
+        } catch {
+          setAuthUser({
+            id: session.user.id,
+            email: session.user.email!,
+            username: session.user.email!.split('@')[0],
+            displayName: session.user.email!.split('@')[0],
+            role: 'contributor',
+          });
+        }
       } else if (event === 'SIGNED_OUT') {
         clearAuthUser();
       }

@@ -93,6 +93,17 @@ export default function Sidebar() {
               </Link>
             </li>
           )}
+          {authUser && hasMinRole(authUser.role, 'administrator') && (
+            <li>
+              <Link
+                href="/admin"
+                className={`vector-sidebar-link ${pathname === '/admin' ? 'active' : ''}`}
+                style={{ color: '#991B1B', fontWeight: pathname === '/admin' ? 700 : 400 }}
+              >
+                Admin Panel
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
 

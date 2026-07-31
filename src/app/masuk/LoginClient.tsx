@@ -33,18 +33,29 @@ export default function LoginClient() {
       return;
     }
 
-    // Fetch profile + role
-    const { profile, role } = await getUserProfile(data.user.id);
+    // Fetch profile + role — with fallback so redirect always happens
+    try {
+      const { profile, role } = await getUserProfile(data.user.id);
+      setAuthUser({
+        id: data.user.id,
+        email: data.user.email!,
+        username: profile?.username || email.split('@')[0],
+        displayName: profile?.display_name || email.split('@')[0],
+        role: (role as UserRole) || 'contributor',
+        avatarUrl: profile?.avatar_url,
+      });
+    } catch {
+      // Profile fetch failed — still log them in with minimal info
+      setAuthUser({
+        id: data.user.id,
+        email: data.user.email!,
+        username: email.split('@')[0],
+        displayName: email.split('@')[0],
+        role: 'contributor',
+      });
+    }
 
-    setAuthUser({
-      id: data.user.id,
-      email: data.user.email!,
-      username: profile?.username || email.split('@')[0],
-      displayName: profile?.display_name || email.split('@')[0],
-      role: role as UserRole,
-      avatarUrl: profile?.avatar_url,
-    });
-
+    // Always redirect — never leave user stuck on loading
     router.push('/');
   }
 
