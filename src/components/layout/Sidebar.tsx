@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useVeriLexStore } from '@/lib/useStore';
+import { useVeriLexStore, hasMinRole } from '@/lib/useStore';
 
 const mainNavigation = [
   { label: 'Halaman Utama', href: '/' },
@@ -11,7 +11,6 @@ const mainNavigation = [
   { label: 'Flashcard SRA', href: '/flashcard' },
   { label: 'Dashboard Progres', href: '/dashboard' },
 ];
-
 const legalFields = [
   { label: 'Hukum Pidana', href: '/cari?bidang=pidana' },
   { label: 'Hukum Perdata', href: '/cari?bidang=perdata' },
@@ -28,7 +27,8 @@ const helpItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { favorites } = useVeriLexStore();
+  const { favorites, authUser } = useVeriLexStore();
+  const isReviewer = authUser ? hasMinRole(authUser.role, 'reviewer') : false;
 
   const isActive = (href: string) => {
     if (href === '/' && pathname === '/') return true;
@@ -82,6 +82,17 @@ export default function Sidebar() {
               Favorit Saya ({favorites.length})
             </Link>
           </li>
+          {isReviewer && (
+            <li>
+              <Link
+                href="/reviewer"
+                className={`vector-sidebar-link ${pathname === '/reviewer' ? 'active' : ''}`}
+                style={{ color: '#AC6600', fontWeight: pathname === '/reviewer' ? 700 : 400 }}
+              >
+                Dashboard Reviewer
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
 

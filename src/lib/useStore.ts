@@ -3,6 +3,40 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Maxim } from '@/types';
+import { supabase } from './supabase';
+
+export type UserRole =
+  | 'reader' | 'contributor' | 'editor'
+  | 'reviewer' | 'senior_editor' | 'subject_expert' | 'administrator';
+
+const ROLE_LEVEL: Record<UserRole, number> = {
+  reader: 0, contributor: 1, reviewer: 2,
+  subject_expert: 2, editor: 3, senior_editor: 4, administrator: 5,
+};
+
+export function hasMinRole(role: UserRole, required: UserRole): boolean {
+  return (ROLE_LEVEL[role] ?? 0) >= (ROLE_LEVEL[required] ?? 0);
+}
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  reader:         'Pembaca',
+  contributor:    'Kontributor',
+  reviewer:       'Pengulas',
+  subject_expert: 'Pakar Bidang',
+  editor:         'Editor',
+  senior_editor:  'Editor Senior',
+  administrator:  'Administrator',
+};
+
+export const ROLE_COLORS: Record<UserRole, { bg: string; text: string; border: string }> = {
+  reader:         { bg: '#F8F9FA', text: '#54595D', border: '#A2A9B1' },
+  contributor:    { bg: '#EFF6FF', text: '#1E40AF', border: '#BFDBFE' },
+  reviewer:       { bg: '#F0FDFA', text: '#134E4A', border: '#99F6E4' },
+  subject_expert: { bg: '#FDF4FF', text: '#6B21A8', border: '#E9D5FF' },
+  editor:         { bg: '#ECFDF5', text: '#065F46', border: '#A7F3D0' },
+  senior_editor:  { bg: '#FFFBEB', text: '#92400E', border: '#FDE68A' },
+  administrator:  { bg: '#FEF2F2', text: '#991B1B', border: '#FECACA' },
+};
 
 interface VeriLexState {
   favorites: string[];
@@ -13,7 +47,19 @@ interface VeriLexState {
   notes: Record<string, string>;
   setNote: (id: string, note: string) => void;
 
-  // Authentication State
+  // ── Supabase Auth ──────────────────────────────────────────────────────
+  authUser: {
+    id: string;
+    email: string;
+    username: string;
+    displayName: string;
+    role: UserRole;
+    avatarUrl?: string;
+  } | null;
+  setAuthUser: (user: VeriLexState['authUser']) => void;
+  clearAuthUser: () => void;
+
+  // Legacy local auth (kept for backwards compat, use authUser instead)
   user: {
     isLoggedIn: boolean;
     name: string;
@@ -56,7 +102,15 @@ export const useVeriLexStore = create<VeriLexState>()(
           notes: { ...state.notes, [id]: note },
         })),
 
-      // Auth
+      // ── Supabase Auth ────────────────────────────────────────────────
+      authUser: null,
+      setAuthUser: (user) => set(() => ({ authUser: user, user: { isLoggedIn: !!user, name: user?.displayName || 'Tamu Akademisi' } })),
+      clearAuthUser: () => {
+        supabase.auth.signOut();
+        set(() => ({ authUser: null, user: { isLoggedIn: false, name: 'Tamu Akademisi' } }));
+      },
+
+      // Auth (legacy)
       user: {
         isLoggedIn: false,
         name: 'Tamu Akademisi',

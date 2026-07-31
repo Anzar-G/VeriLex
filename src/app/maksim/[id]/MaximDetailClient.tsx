@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Star, Volume2, Share2, RotateCcw, MessageSquare } from 'lucide-react';
+import { Star, Volume2, Share2, RotateCcw, MessageSquare, Lock } from 'lucide-react';
 import type { Maxim } from '@/types';
 import Sidebar from '@/components/layout/Sidebar';
-import { useVeriLexStore } from '@/lib/useStore';
+import { useVeriLexStore, hasMinRole } from '@/lib/useStore';
 import MaximEditor from '@/components/edit/MaximEditor';
+import RevisionHistory from '@/components/edit/RevisionHistory';
 
 const fieldLabels: Record<string, string> = {
   'umum': 'Asas Umum & Penafsiran',
@@ -55,8 +56,12 @@ function SectionPlaceholder() {
 }
 
 export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
-  const { favorites, toggleFavorite, notes, setNote, editedMaxims, updateMaxim, resetMaxim } = useVeriLexStore();
+  const { favorites, toggleFavorite, notes, setNote, editedMaxims, updateMaxim, resetMaxim, authUser } = useVeriLexStore();
   const isFav = favorites.includes(initialMaxim.id);
+
+  // Role checks
+  const canEdit       = authUser ? hasMinRole(authUser.role, 'contributor') : false;
+  const canDirectSave = authUser ? hasMinRole(authUser.role, 'editor')      : false;
   const [isPlaying, setIsPlaying] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -67,7 +72,7 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
     });
   }, [initialMaxim.id]);
   const [tocExpanded, setTocExpanded] = useState(true);
-  const [activeTab, setActiveTab] = useState<'baca' | 'diskusi' | 'sunting'>('baca');
+  const [activeTab, setActiveTab] = useState<'baca' | 'diskusi' | 'sunting' | 'riwayat'>('baca');
 
   // ── State: live maxim (updated after a successful global save) ──────────
   const [liveMaxim, setLiveMaxim] = useState<Maxim>(initialMaxim);
@@ -179,9 +184,8 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
           </div>
           <div className="vector-tabs-group" suppressHydrationWarning>
             <button suppressHydrationWarning onClick={() => setActiveTab('baca')} className={`vector-tab-item vector-tab-btn ${activeTab === 'baca' ? 'active' : ''}`}>Baca</button>
-            <button suppressHydrationWarning onClick={() => setActiveTab('sunting')} className={`vector-tab-item vector-tab-btn ${activeTab === 'sunting' ? 'active' : ''}`}>Sunting</button>
-            <span className="vector-tab-item disabled">Lihat riwayat</span>
-            <button onClick={() => toggleFavorite(maxim.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 0.5rem', color: isFav ? 'var(--bronze)' : '#72777D' }} aria-label={isFav ? 'Hapus dari favorit' : 'Simpan ke favorit'}>
+            <button suppressHydrationWarning onClick={() => setActiveTab('sunting')} className={`vector-tab-item vector-tab-btn ${activeTab === 'sunting' ? 'active' : ''}`}>Sunting</button>            <span className="vector-tab-item disabled">Lihat riwayat</span>
+            <button suppressHydrationWarning onClick={() => setActiveTab('riwayat')} className={`vector-tab-item vector-tab-btn ${activeTab === 'riwayat' ? 'active' : ''}`}>Riwayat</button>            <button onClick={() => toggleFavorite(maxim.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 0.5rem', color: isFav ? 'var(--bronze)' : '#72777D' }} aria-label={isFav ? 'Hapus dari favorit' : 'Simpan ke favorit'}>
               <Star size={14} fill={isFav ? 'var(--bronze)' : 'none'} />
             </button>
           </div>
@@ -933,10 +937,55 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
 
         {/* ══ TAB: SUNTING ══ */}
         {activeTab === 'sunting' && (
-          <MaximEditor
-            maxim={maxim}
-            onSaved={(updated) => { setLiveMaxim(updated); setActiveTab('baca'); }}
-            onCancel={() => setActiveTab('baca')}
+          !authUser ? (
+            // Not logged in
+            <div style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+              <Lock size={40} style={{ color: '#A2A9B1', marginBottom: '1rem' }} />
+              <p style={{ fontFamily: 'var(--font-display)', fontSize: '1.125rem', color: 'var(--navy)', marginBottom: '0.5rem' }}>
+                Masuk untuk menyunting
+              </p>
+              <p style={{ fontSize: '0.875rem', color: '#54595D', marginBottom: '1.5rem' }}>
+                Anda perlu memiliki akun VeriLex untuk berkontribusi pada ensiklopedia ini.
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+                <Link href="/masuk" className="btn-primary">Masuk</Link>
+                <Link href="/daftar" className="btn-secondary">Daftar Akun</Link>
+              </div>
+            </div>
+          ) : !canEdit ? (
+            // Logged in but Reader role
+            <div style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+              <Lock size={40} style={{ color: '#A2A9B1', marginBottom: '1rem' }} />
+              <p style={{ fontFamily: 'var(--font-display)', fontSize: '1.125rem', color: 'var(--navy)', marginBottom: '0.5rem' }}>
+                Akses sunting terbatas
+              </p>
+              <p style={{ fontSize: '0.875rem', color: '#54595D', maxWidth: '400px', margin: '0 auto 1rem' }}>
+                Peran Anda saat ini adalah <strong>Pembaca</strong>. Untuk dapat menyunting, Anda perlu ditingkatkan ke peran Kontributor oleh Administrator.
+              </p>
+            </div>
+          ) : (
+            // Contributor or above
+            <>
+              {!canDirectSave && (
+                <div style={{ padding: '0.625rem 0.875rem', backgroundColor: '#FFFBEB', border: '1px solid #FDE68A', marginBottom: '1rem', fontSize: '0.8125rem', color: '#92400E', lineHeight: 1.5 }}>
+                  <strong>Peran Kontributor:</strong> Suntingan Anda akan masuk ke antrian tinjauan dan baru dipublikasikan setelah disetujui oleh Editor.
+                </div>
+              )}
+              <MaximEditor
+                maxim={maxim}
+                isDirectSave={canDirectSave}
+                onSaved={(updated) => { setLiveMaxim(updated); setActiveTab('baca'); }}
+                onCancel={() => setActiveTab('baca')}
+              />
+            </>
+          )
+        )}
+
+        {/* ══ TAB: RIWAYAT ══ */}
+        {activeTab === 'riwayat' && (
+          <RevisionHistory
+            maximId={maxim.id}
+            maximLatinPhrase={maxim.latinPhrase}
           />
         )}
 

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, Save, X, Loader } from 'lucide-react';
 import type { Maxim, LegalField } from '@/types';
+import { useVeriLexStore } from '@/lib/useStore';
 import {
   TextField, TextAreaField, SelectField, MultiSelectField,
   StringListEditor, WordByWordEditor, NestedObjectEditor,
@@ -53,13 +54,20 @@ function Section({ title, children, defaultOpen = false }: { title: string; chil
 // ── Main Editor ───────────────────────────────────────────────────────────
 interface Props {
   maxim: Maxim;
+  isDirectSave?: boolean;   // Editor/Senior Editor/Admin: save langsung ke DB
   onSaved: (updated: Maxim) => void;
   onCancel: () => void;
 }
 
-export default function MaximEditor({ maxim: initial, onSaved, onCancel }: Props) {
+export default function MaximEditor({ maxim: initial, isDirectSave = true, onSaved, onCancel }: Props) {
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState<string | null>(null);
+
+  // ── Revision tracking fields (wajib) ────────────────────────────────────
+  const [editReason,        setEditReason]        = useState('');
+  const [changeBasis,       setChangeBasis]       = useState('');
+  const [changeBasisDetail, setChangeBasisDetail] = useState('');
+  const { authUser } = useVeriLexStore();
 
   // ── Top-level fields ────────────────────────────────────────────────────
   const [latinPhrase,        setLatinPhrase]        = useState(initial.latinPhrase);
@@ -146,6 +154,13 @@ export default function MaximEditor({ maxim: initial, onSaved, onCancel }: Props
     setSaving(true);
     setError(null);
 
+    // Validate required revision fields
+    if (!editReason.trim()) {
+      setError('Alasan sunting wajib diisi.');
+      setSaving(false);
+      return;
+    }
+
     const payload = {
       // top-level columns
       latin_phrase:         latinPhrase,
@@ -182,18 +197,43 @@ export default function MaximEditor({ maxim: initial, onSaved, onCancel }: Props
       faq,
       maximNotes,
       relatedTerms,
+      // revision tracking
+      edit_reason:          editReason,
+      change_basis:         changeBasis || null,
+      change_basis_detail:  changeBasisDetail || null,
+      editor_id:            authUser?.id ?? null,
+      editor_name:          authUser?.displayName ?? 'Anonim',
     };
 
     try {
-      const res = await fetch(`/api/maxims/${initial.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Gagal menyimpan');
+      if (isDirectSave) {
+        // ── Editor/Senior Editor/Admin: simpan langsung ke DB ────────────
+        const res = await fetch(`/api/maxims/${initial.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Gagal menyimpan');
+        }
+      } else {
+        // ── Contributor: kirim ke edit_proposals (review queue) ──────────
+        const res = await fetch(`/api/proposals`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            maxim_id: initial.id,
+            change_summary: `Revisi oleh kontributor pada ${new Date().toLocaleDateString('id-ID')}`,
+            proposed_data: payload,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Gagal mengirim proposal');
+        }
+        // For contributor, we still update local display optimistically
+        // but the DB isn't changed until approved
       }
 
       // Build updated Maxim for local state
@@ -238,14 +278,16 @@ export default function MaximEditor({ maxim: initial, onSaved, onCancel }: Props
             <X size={13} /> Batal
           </button>
           <button type="submit" disabled={saving} className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-            {saving ? <><Loader size={13} style={{ animation: 'spin 1s linear infinite' }} /> Menyimpan...</> : <><Save size={13} /> Simpan ke Wiki</>}
+            {saving ? <><Loader size={13} style={{ animation: 'spin 1s linear infinite' }} /> Menyimpan...</> : <><Save size={13} /> {isDirectSave ? 'Simpan ke Wiki' : 'Kirim untuk Ditinjau'}</>}
           </button>
         </div>
       </div>
 
       {/* ── Notice ── */}
       <div style={{ padding: '0.625rem 0.875rem', backgroundColor: '#EAF3FF', border: '1px solid #A2A9B1', marginBottom: '1.25rem', fontSize: '0.8125rem', color: '#0F1B3C', lineHeight: 1.5 }}>
-        <strong>Perhatian:</strong> Suntingan ini akan langsung terlihat oleh semua pengguna VeriLex. Pastikan informasi yang Anda masukkan akurat dan dapat dipertanggungjawabkan.
+        <strong>Perhatian:</strong> {isDirectSave
+          ? 'Suntingan ini akan langsung terlihat oleh semua pengguna VeriLex. Pastikan informasi akurat dan dapat dipertanggungjawabkan.'
+          : 'Suntingan Anda akan masuk ke antrian tinjauan dan baru dipublikasikan setelah disetujui Editor.'}
       </div>
 
       {error && (
@@ -253,6 +295,62 @@ export default function MaximEditor({ maxim: initial, onSaved, onCancel }: Props
           ⚠ {error}
         </div>
       )}
+
+      {/* ══ WAJIB: Alasan Sunting + Dasar Perubahan ══ */}
+      <div style={{ border: '2px solid #0F1B3C', padding: '1rem', marginBottom: '1.25rem', backgroundColor: '#F8FAFC' }}>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8125rem', fontWeight: 700, color: '#0F1B3C', margin: '0 0 0.75rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+          ✏ Informasi Sunting <span style={{ color: '#C85A54' }}>*</span>
+        </p>
+
+        <div style={{ marginBottom: '0.75rem' }}>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#54595D', marginBottom: '0.25rem' }}>
+            Alasan Sunting <span style={{ color: '#C85A54' }}>*</span>
+          </label>
+          <input
+            type="text"
+            value={editReason}
+            onChange={e => setEditReason(e.target.value)}
+            placeholder='Contoh: Menambah Putusan MK No. 55/PUU-VIII/2010 pada seksi Yurisprudensi'
+            required
+            style={{ width: '100%', border: `1px solid ${editReason.trim() ? '#A2A9B1' : '#C85A54'}`, borderRadius: '2px', padding: '0.375rem 0.625rem', fontSize: '0.875rem', fontFamily: 'var(--font-body)', outline: 'none' }}
+          />
+          <p style={{ fontSize: '0.6875rem', color: '#72777D', margin: '0.25rem 0 0' }}>
+            Jelaskan secara spesifik apa yang diubah. Hindari alasan umum seperti "update" atau "perbaikan".
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#54595D', marginBottom: '0.25rem' }}>
+              Dasar Perubahan
+            </label>
+            <select
+              value={changeBasis}
+              onChange={e => setChangeBasis(e.target.value)}
+              style={{ width: '100%', border: '1px solid #A2A9B1', borderRadius: '2px', padding: '0.375rem 0.625rem', fontSize: '0.875rem', fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer', backgroundColor: '#FFFFFF' }}
+            >
+              <option value="">— Pilih dasar (opsional) —</option>
+              <option value="uu">Undang-Undang / Peraturan</option>
+              <option value="putusan">Putusan Pengadilan (MK/MA)</option>
+              <option value="buku">Buku / Literatur</option>
+              <option value="jurnal">Jurnal Ilmiah</option>
+              <option value="doktrin">Doktrin Hukum</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#54595D', marginBottom: '0.25rem' }}>
+              Detail Sumber
+            </label>
+            <input
+              type="text"
+              value={changeBasisDetail}
+              onChange={e => setChangeBasisDetail(e.target.value)}
+              placeholder='Contoh: UU No. 12/2011 Pasal 63'
+              style={{ width: '100%', border: '1px solid #A2A9B1', borderRadius: '2px', padding: '0.375rem 0.625rem', fontSize: '0.875rem', fontFamily: 'var(--font-body)', outline: 'none' }}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* ══ SEKSI 1: Identitas Utama ══ */}
       <Section title="§1 Identitas Utama" defaultOpen>

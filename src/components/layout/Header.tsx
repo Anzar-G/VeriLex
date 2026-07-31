@@ -2,133 +2,64 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import { Search, Menu, X, LogIn, LogOut, User } from 'lucide-react';
-import { useVeriLexStore } from '@/lib/useStore';
+import { usePathname, useRouter } from 'next/navigation';
+import { Search, Menu, X, LogIn, LogOut, User, ChevronDown } from 'lucide-react';
+import { useVeriLexStore, ROLE_LABELS, ROLE_COLORS } from '@/lib/useStore';
 
 export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [inputName, setInputName] = useState('');
-  const { favorites, user, loginUser, logoutUser } = useVeriLexStore();
+  const router = useRouter();
+  const [mobileMenuOpen,  setMobileMenuOpen]  = useState(false);
+  const [searchQuery,     setSearchQuery]     = useState('');
+  const [userMenuOpen,    setUserMenuOpen]    = useState(false);
+  const { favorites, authUser, clearAuthUser } = useVeriLexStore();
   const pathname = usePathname();
+
+  const isHomepage   = pathname === '/';
+  const isSearchPage = pathname === '/cari';
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/cari?q=${encodeURIComponent(searchQuery.trim())}`;
+      router.push(`/cari?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    loginUser(inputName.trim());
-    setLoginModalOpen(false);
-    setInputName('');
-  };
-
-  const isHomepage = pathname === '/';
-  const isSearchPage = pathname === '/cari';
+  const roleColor = authUser ? (ROLE_COLORS[authUser.role] ?? ROLE_COLORS.reader) : null;
+  const roleLabel = authUser ? (ROLE_LABELS[authUser.role] ?? 'Pembaca') : null;
 
   return (
-    <header
-      style={{
-        backgroundColor: '#F6F6F6',
-        height: '46px',
-        position: 'relative',
-        zIndex: 50,
-        borderBottom: 'none',
-        display: 'flex',
-        alignItems: 'center',
-      }}
-    >
-      <div
-        className="container-page"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          height: '100%',
-          width: '100%',
-          gap: '1.5rem',
-        }}
-      >
-        {/* Mobile Menu Toggle */}
-        <button
-          className="lg:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+    <header style={{ backgroundColor: '#F6F6F6', height: '46px', position: 'relative', zIndex: 50, borderBottom: 'none', display: 'flex', alignItems: 'center' }}>
+      <div className="container-page" style={{ display: 'flex', alignItems: 'center', height: '100%', width: '100%', gap: '1.5rem' }}>
+
+        {/* Mobile toggle */}
+        <button className="lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           style={{ color: '#202122', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', display: 'flex', alignItems: 'center' }}
-          aria-label="Buka menu navigasi"
-        >
+          aria-label="Buka menu navigasi">
           {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
 
-        {/* Brand Logo */}
+        {/* Logo */}
         <div style={{ width: '180px', flexShrink: 0 }} className="hidden lg:block">
-          <Link
-            href="/"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.375rem',
-              textDecoration: 'none',
-            }}
-          >
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', textDecoration: 'none' }}>
             <img src="/verilex-logo.png" alt="VeriLex Logo" style={{ height: '24px', width: 'auto', borderRadius: '2px' }} />
-            <span style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 400,
-              fontSize: '1rem',
-              color: '#000000',
-              letterSpacing: '0.02em',
-            }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1rem', color: '#000000', letterSpacing: '0.02em' }}>
               VeriLex
             </span>
           </Link>
         </div>
 
-        {/* Search Bar */}
+        {/* Search bar (hidden on homepage & search page) */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
           {!isHomepage && !isSearchPage && (
-            <form
-              onSubmit={handleSearchSubmit}
-              style={{ width: '100%', maxWidth: '360px' }}
-              role="search"
-            >
+            <form onSubmit={handleSearchSubmit} style={{ width: '100%', maxWidth: '360px' }} role="search">
               <div style={{ position: 'relative', width: '100%' }}>
                 <label htmlFor="header-search-input" className="sr-only">Cari maksim hukum</label>
-                <input
-                  type="search"
-                  id="header-search-input"
-                  placeholder="Cari VeriLex"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                <input type="search" id="header-search-input" placeholder="Cari VeriLex"
+                  value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                   className="input-text"
-                  style={{
-                    paddingRight: '2rem',
-                    fontSize: '0.8125rem',
-                    backgroundColor: '#FFFFFF',
-                    height: '28px',
-                    borderColor: '#A2A9B1',
-                    borderRadius: '2px',
-                  }}
+                  style={{ paddingRight: '2rem', fontSize: '0.8125rem', backgroundColor: '#FFFFFF', height: '28px', borderColor: '#A2A9B1', borderRadius: '2px' }}
                 />
-                <button
-                  type="submit"
-                  style={{
-                    position: 'absolute',
-                    right: '0.375rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    color: '#72777D',
-                    cursor: 'pointer',
-                    padding: '0.125rem',
-                    display: 'flex',
-                  }}
-                  aria-label="Kirim pencarian"
-                >
+                <button type="submit" style={{ position: 'absolute', right: '0.375rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#72777D', cursor: 'pointer', padding: '0.125rem', display: 'flex' }} aria-label="Cari">
                   <Search size={13} />
                 </button>
               </div>
@@ -136,107 +67,103 @@ export default function Header() {
           )}
         </div>
 
-        {/* Vector User Utility Menu (Top Right) */}
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '0.75rem', fontFamily: 'var(--font-body)' }} className="hidden md:flex">
-          {user.isLoggedIn ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: '#202122' }}>
-              <User size={12} color="var(--navy)" />
-              <span style={{ fontWeight: 600 }}>{user.name}</span>
-              <button 
-                onClick={logoutUser}
-                style={{ background: 'none', border: 'none', color: '#C85A54', cursor: 'pointer', padding: 0, fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.125rem', marginLeft: '0.25rem' }}
-                title="Keluar log"
+        {/* Right: User utility (desktop) */}
+        <div className="hidden md:flex" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '0.75rem', fontFamily: 'var(--font-body)' }}>
+          {authUser ? (
+            // ── Logged-in user menu ──
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setUserMenuOpen(p => !p)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem 0.5rem', color: '#202122', fontSize: '0.75rem' }}
               >
-                <LogOut size={12} /> Keluar
+                <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#0F1B3C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <User size={12} color="#FFFFFF" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.2 }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.75rem' }}>{authUser.displayName}</span>
+                  <span style={{ fontSize: '0.625rem', padding: '0 0.25rem', borderRadius: '2px', backgroundColor: roleColor?.bg, color: roleColor?.text, border: `1px solid ${roleColor?.border}`, fontWeight: 600 }}>
+                    {roleLabel}
+                  </span>
+                </div>
+                <ChevronDown size={11} style={{ color: '#72777D', transform: userMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }} />
               </button>
+
+              {/* Dropdown */}
+              {userMenuOpen && (
+                <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: '2px', backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', minWidth: '180px', zIndex: 200 }}
+                  onMouseLeave={() => setUserMenuOpen(false)}>
+                  <div style={{ padding: '0.625rem 0.875rem', borderBottom: '1px solid #EAECF0', backgroundColor: '#F8F9FA' }}>
+                    <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#202122' }}>{authUser.displayName}</div>
+                    <div style={{ fontSize: '0.6875rem', color: '#72777D' }}>@{authUser.username}</div>
+                  </div>
+                  {[
+                    { href: '/profil', label: 'Profil Saya' },
+                    { href: '/kontribusi', label: 'Kontribusi Saya' },
+                    { href: '/favorit', label: `Favorit (${favorites.length})` },
+                    { href: '/dashboard', label: 'Dashboard' },
+                  ].map(item => (
+                    <Link key={item.href} href={item.href}
+                      onClick={() => setUserMenuOpen(false)}
+                      style={{ display: 'block', padding: '0.5rem 0.875rem', fontSize: '0.8125rem', color: '#0645AD', textDecoration: 'none', borderBottom: '1px solid #EAECF0' }}
+                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F8F9FA')}
+                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
+                      {item.label}
+                    </Link>
+                  ))}
+                  <button onClick={() => { clearAuthUser(); setUserMenuOpen(false); router.push('/'); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', width: '100%', padding: '0.5rem 0.875rem', fontSize: '0.8125rem', color: '#C85A54', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                    <LogOut size={12} /> Keluar
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
-            <button 
-              onClick={() => setLoginModalOpen(true)}
-              style={{ background: 'none', border: 'none', color: '#0645AD', cursor: 'pointer', padding: 0, fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-            >
-              <LogIn size={12} /> Masuk log
-            </button>
+            // ── Guest ──
+            <div style={{ display: 'flex', gap: '0.625rem', alignItems: 'center' }}>
+              <Link href="/masuk" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#0645AD', fontSize: '0.75rem', textDecoration: 'none' }}>
+                <LogIn size={12} /> Masuk
+              </Link>
+              <span style={{ color: '#A2A9B1' }}>·</span>
+              <Link href="/daftar" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#0645AD', fontSize: '0.75rem', textDecoration: 'none', fontWeight: 700 }}>
+                Daftar
+              </Link>
+            </div>
           )}
-          <Link href="/faq" className="wiki-link" style={{ color: '#0645AD' }}>Pembicaraan</Link>
-          <Link href="/dashboard" className="wiki-link" style={{ color: '#0645AD' }}>Kontribusi</Link>
+
+          <Link href="/faq"     className="wiki-link" style={{ color: '#0645AD' }}>Pembicaraan</Link>
           <Link href="/favorit" className="wiki-link" style={{ color: '#0645AD', fontWeight: 600 }}>
             Favorit ({favorites.length})
           </Link>
         </div>
       </div>
 
-      {/* Login Modal Overlay */}
-      {loginModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-        }}>
-          <form 
-            onSubmit={handleLoginSubmit}
-            style={{
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #A2A9B1',
-              padding: '1.5rem',
-              width: '100%',
-              maxWidth: '320px',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ margin: 0, fontSize: '0.9375rem', fontFamily: 'var(--font-display)', fontWeight: 700 }}>Masuk Log VeriLex</h3>
-              <button type="button" onClick={() => setLoginModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#72777D' }}>
-                <X size={16} />
-              </button>
-            </div>
-            
-            <label htmlFor="login-name-input" style={{ display: 'block', fontSize: '0.75rem', color: '#54595D', marginBottom: '0.375rem', fontWeight: 600 }}>Nama Pengguna / Samaran:</label>
-            <input 
-              type="text" 
-              id="login-name-input"
-              required 
-              value={inputName} 
-              onChange={e => setInputName(e.target.value)}
-              className="input-text"
-              placeholder="Contoh: Nizar Alfaris"
-              style={{ fontSize: '0.8125rem', height: '32px', marginBottom: '1rem' }}
-            />
-
-            <button type="submit" className="btn-primary" style={{ width: '100%', height: '32px', justifyContent: 'center' }}>
-              Masuk
-            </button>
-          </form>
-        </div>
-      )}
-
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div
-          style={{
-            backgroundColor: '#FFFFFF',
-            borderBottom: '1px solid #A2A9B1',
-            position: 'absolute',
-            top: '46px',
-            left: 0,
-            right: 0,
-            boxShadow: '0 4px 8px rgba(0,0,0,0.08)',
-            zIndex: 99,
-          }}
-          className="lg:hidden"
-        >
-          {user.isLoggedIn ? (
+        <div style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #A2A9B1', position: 'absolute', top: '46px', left: 0, right: 0, boxShadow: '0 4px 8px rgba(0,0,0,0.08)', zIndex: 99 }} className="lg:hidden">
+          {authUser ? (
             <div style={{ padding: '0.625rem 1.25rem', borderBottom: '1px solid #EAECF0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8F9FA' }}>
-              <span style={{ fontSize: '0.8125rem', fontWeight: 700 }}>{user.name}</span>
-              <button onClick={logoutUser} style={{ background: 'none', border: 'none', color: '#C85A54', cursor: 'pointer', fontSize: '0.8125rem' }}>Keluar</button>
+              <div>
+                <div style={{ fontSize: '0.8125rem', fontWeight: 700 }}>{authUser.displayName}</div>
+                <div style={{ fontSize: '0.625rem', color: roleColor?.text, backgroundColor: roleColor?.bg, border: `1px solid ${roleColor?.border}`, padding: '0 0.25rem', display: 'inline-block', marginTop: '2px' }}>
+                  {roleLabel}
+                </div>
+              </div>
+              <button onClick={() => { clearAuthUser(); setMobileMenuOpen(false); router.push('/'); }}
+                style={{ background: 'none', border: 'none', color: '#C85A54', cursor: 'pointer', fontSize: '0.8125rem' }}>
+                Keluar
+              </button>
             </div>
           ) : (
-            <button onClick={() => { setMobileMenuOpen(false); setLoginModalOpen(true); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.625rem 1.25rem', color: '#0645AD', background: 'none', border: 'none', borderBottom: '1px solid #EAECF0', fontSize: '0.8125rem', fontWeight: 700 }}>
-              Masuk Log
-            </button>
+            <div style={{ display: 'flex', borderBottom: '1px solid #EAECF0' }}>
+              <Link href="/masuk" onClick={() => setMobileMenuOpen(false)}
+                style={{ flex: 1, textAlign: 'center', padding: '0.625rem', color: '#0645AD', textDecoration: 'none', fontSize: '0.8125rem', borderRight: '1px solid #EAECF0' }}>
+                Masuk
+              </Link>
+              <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}
+                style={{ flex: 1, textAlign: 'center', padding: '0.625rem', color: '#0645AD', textDecoration: 'none', fontSize: '0.8125rem', fontWeight: 700 }}>
+                Daftar
+              </Link>
+            </div>
           )}
           {[
             { href: '/', label: 'Halaman Utama' },
@@ -247,21 +174,10 @@ export default function Header() {
             { href: '/dashboard', label: 'Dashboard Progres' },
             { href: '/panduan', label: 'Panduan Penggunaan' },
             { href: '/faq', label: 'FAQ & Penyangkalan' },
-          ].map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              style={{
-                display: 'block',
-                padding: '0.625rem 1.25rem',
-                color: '#0645AD',
-                fontFamily: 'var(--font-body)',
-                fontSize: '0.8125rem',
-                textDecoration: 'none',
-                borderBottom: '1px solid #EAECF0',
-              }}
-              onClick={() => setMobileMenuOpen(false)}
-            >
+          ].map(item => (
+            <Link key={item.href} href={item.href}
+              style={{ display: 'block', padding: '0.625rem 1.25rem', color: '#0645AD', fontFamily: 'var(--font-body)', fontSize: '0.8125rem', textDecoration: 'none', borderBottom: '1px solid #EAECF0' }}
+              onClick={() => setMobileMenuOpen(false)}>
               {item.label}
             </Link>
           ))}
