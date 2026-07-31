@@ -40,15 +40,26 @@ export async function getUserProfile(userId: string) {
   ]);
 
   const roles = (roleRes.data ?? []).map(r => r.role as string);
+
   const roleLevels: Record<string, number> = {
     reader: 0, contributor: 1, reviewer: 2,
     subject_expert: 2, editor: 3, senior_editor: 4, administrator: 5,
   };
-  const highestRole = roles.sort((a, b) => (roleLevels[b] ?? 0) - (roleLevels[a] ?? 0))[0] ?? 'reader';
+
+  // Find highest role without mutating array
+  let highestRole = 'contributor';
+  let highestLevel = -1;
+  for (const role of roles) {
+    const level = roleLevels[role] ?? 0;
+    if (level > highestLevel) {
+      highestLevel = level;
+      highestRole = role;
+    }
+  }
 
   return {
     profile: profileRes.data,
-    role: highestRole as string,
+    role: highestRole,
     roles,
   };
 }
