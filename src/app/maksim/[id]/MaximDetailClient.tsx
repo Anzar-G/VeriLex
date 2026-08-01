@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Star, Volume2, Share2, RotateCcw, MessageSquare, Lock } from 'lucide-react';
+import { Star, Volume2, Share2, RotateCcw, MessageSquare, Lock, Quote } from 'lucide-react';
 import type { Maxim } from '@/types';
 import Sidebar from '@/components/layout/Sidebar';
 import { useVeriLexStore, hasMinRole } from '@/lib/useStore';
@@ -12,6 +12,8 @@ import ReportButton from '@/components/report/ReportButton';
 import KnowledgeGraph from '@/components/maxim/KnowledgeGraph';
 import SourceList from '@/components/maxim/SourceList';
 import { ArticleMetaBar } from '@/components/maxim/ArticleBadges';
+import CitationModal from '@/components/maxim/CitationModal';
+import DiscussionPanel from '@/components/maxim/DiscussionPanel';
 
 const fieldLabels: Record<string, string> = {
   'umum': 'Asas Umum & Penafsiran',
@@ -68,6 +70,7 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
   const canDirectSave = authUser ? hasMinRole(authUser.role, 'editor')      : false;
   const [isPlaying, setIsPlaying] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [citationOpen, setCitationOpen] = useState(false);
 
   // ── Track page view for "Banyak Dibaca" counter ────────────────────────
   useEffect(() => {
@@ -174,6 +177,7 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
   const tableHeader: React.CSSProperties = { ...tableCell, backgroundColor: '#F8F9FA', fontWeight: 700 };
 
   return (
+    <>
     <div className="container-page" style={{ display: 'flex', gap: '1rem' }} suppressHydrationWarning>
       <script suppressHydrationWarning type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
@@ -226,6 +230,7 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
               <div className="wiki-infobox-actions">
                 <button onClick={handleAudio} className="wiki-infobox-btn"><Volume2 size={11} /> {isPlaying ? 'Suara...' : 'Pelafalan'}</button>
                 <button onClick={handleShare} className="wiki-infobox-btn">{copied ? 'Disalin!' : <><Share2 size={11} /> Bagikan</>}</button>
+                <button onClick={() => setCitationOpen(true)} className="wiki-infobox-btn" style={{ width: '100%', marginTop: '0.25rem' }}><Quote size={11} /> Kutip Artikel</button>
               </div>
               {Object.keys(localOverride).length > 0 && (
                 <button onClick={handleResetEdit} className="wiki-infobox-btn" style={{ width: '100%', borderColor: '#C85A54', background: '#FFF5F5', color: '#C85A54', marginTop: '0.375rem' }}>
@@ -944,15 +949,22 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
         {/* ══ TAB: DISKUSI & CATATAN ══ */}
         {activeTab === 'diskusi' && (
           <div style={{ padding: '0.5rem 0' }}>
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', margin: '0 0 1rem', padding: 0 }}>
-              <MessageSquare size={20} color="var(--navy)" /> Catatan Pembelajaran Mandiri
+            {/* Live Discussion Panel */}
+            <DiscussionPanel maximId={maxim.id} latinPhrase={maxim.latinPhrase} />
+
+            {/* Divider */}
+            <hr style={{ border: 'none', borderTop: '1px solid #EAECF0', margin: '2rem 0 1.5rem' }} />
+
+            {/* Personal notes section (kept below discussions) */}
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', margin: '0 0 0.75rem', padding: 0, fontSize: '1rem' }}>
+              <MessageSquare size={16} color="var(--navy)" /> Catatan Pribadi
             </h2>
-            <p style={{ color: '#54595D', fontSize: '0.8125rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
-              Tambahkan hasil analisis hukum kasus nyata, rangkuman pribadi, atau cheat sheet untuk ujian hukum Anda terkait asas <strong>{maxim.latinPhrase}</strong>. Catatan ini disimpan aman secara offline di browser Anda.
+            <p style={{ color: '#54595D', fontSize: '0.8125rem', marginBottom: '1rem', lineHeight: 1.5 }}>
+              Catatan ini disimpan secara offline di browser Anda dan tidak dipublikasikan.
             </p>
             <form onSubmit={handleSaveNote}>
-              <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Tulis catatan hukum Anda di sini..."
-                style={{ width: '100%', height: '180px', padding: '0.75rem', border: '1px solid #A2A9B1', borderRadius: '2px', fontSize: '0.875rem', fontFamily: 'var(--font-body)', outline: 'none', marginBottom: '1rem' }} />
+              <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Tulis catatan hukum pribadi Anda di sini..."
+                style={{ width: '100%', height: '150px', padding: '0.75rem', border: '1px solid #A2A9B1', borderRadius: '2px', fontSize: '0.875rem', fontFamily: 'var(--font-body)', outline: 'none', marginBottom: '0.75rem' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <button type="submit" className="btn-primary">Simpan Catatan</button>
                 {noteSaved && <span style={{ color: 'var(--success)', fontSize: '0.8125rem', fontWeight: 600 }}>✓ Catatan disimpan!</span>}
@@ -1017,5 +1029,11 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
 
       </div>
     </div>
+
+      {/* ── Citation Modal ── */}
+      {citationOpen && (
+        <CitationModal maxim={maxim} onClose={() => setCitationOpen(false)} />
+      )}
+    </>
   );
 }

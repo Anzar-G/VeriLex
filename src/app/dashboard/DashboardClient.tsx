@@ -3,6 +3,8 @@
 import { BookOpen, Brain, Trophy, Flame, TrendingUp, BarChart3 } from 'lucide-react';
 import { legalFields, mockMaxims } from '@/data/mockData';
 import { useVeriLexStore } from '@/lib/useStore';
+import PlatformStatsPanel from '@/components/dashboard/PlatformStatsPanel';
+import { EditorLeaderboard } from '@/components/editor/EditorReputation';
 
 export default function DashboardClient() {
   const { quizScores, flashcardLevels } = useVeriLexStore();
@@ -99,7 +101,7 @@ export default function DashboardClient() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
         
         {/* Progress By Field Chart */}
         <section style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.25rem' }}>
@@ -189,6 +191,31 @@ export default function DashboardClient() {
         </section>
 
       </div>
+
+      {/* ── FASE 6: Platform Statistics ── */}
+      <section style={{ marginBottom: '2rem' }}>
+        <div style={{ borderBottom: '1px solid #A2A9B1', marginBottom: '1.25rem', paddingBottom: '0.375rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <BarChart3 size={16} color="var(--navy)" />
+          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.2rem', color: '#000000', margin: 0, border: 'none', padding: 0 }}>
+            Statistik Platform VeriLex
+          </h2>
+        </div>
+        <PlatformStatsPanel />
+      </section>
+
+      {/* ── FASE 6: Editor Leaderboard ── */}
+      <section>
+        <div style={{ borderBottom: '1px solid #A2A9B1', marginBottom: '1.25rem', paddingBottom: '0.375rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <TrendingUp size={16} color="var(--navy)" />
+          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.2rem', color: '#000000', margin: 0, border: 'none', padding: 0 }}>
+            Reputasi Editor
+          </h2>
+        </div>
+        <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.25rem', maxWidth: '500px' }}>
+          <EditorLeaderboard />
+        </div>
+      </section>
+
     </main>
   );
 }

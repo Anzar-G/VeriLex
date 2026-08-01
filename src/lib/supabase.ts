@@ -1,9 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnon);
+if (typeof window !== 'undefined' && (!supabaseUrl || !supabaseAnon)) {
+  console.warn('⚠️ [VeriLex] Supabase credentials are missing from environment variables!');
+}
+
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnon || 'placeholder-anon-key'
+);
 
 // ── Database row types ─────────────────────────────────────────────────────
 
@@ -32,4 +39,27 @@ export interface FeaturedMaximRow {
   feature_date: string;
   maxim_id: string | null;
   notes: string | null;
+}
+
+export interface DiscussionRow {
+  id: string;
+  maxim_id: string;
+  parent_id: string | null;
+  author_id: string | null;
+  author_name: string;
+  content: string;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EditorReputationRow {
+  id: string;
+  user_id: string;
+  score: number;
+  edits_accepted: number;
+  edits_rejected: number;
+  references_added: number;
+  reports_valid: number;
+  updated_at: string;
 }
