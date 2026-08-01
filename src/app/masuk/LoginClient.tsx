@@ -22,10 +22,12 @@ export default function LoginClient() {
     setLoading(true);
     setError(null);
     setDebugStatus('1. Menghubungi Supabase Auth...');
-
+    
     try {
+      alert('Mulai signIn ke Supabase...');
       const { data, error: authErr } = await signIn(email, password);
-      console.log('[Login] signIn result:', { user: data?.user?.id, error: authErr?.message });
+      alert('signIn Supabase selesai. Data: ' + (data?.user ? 'Ada user' : 'Tidak ada user') + ' | Error: ' + (authErr?.message || 'Tidak ada'));
+      console.error('[Login] signIn result:', { user: data?.user?.id, error: authErr?.message });
 
       if (authErr || !data.user) {
         setError(
@@ -39,10 +41,12 @@ export default function LoginClient() {
       }
 
       setDebugStatus('2. Berhasil login. Mengambil data profil...');
+      alert('Memulai mengambil data profil...');
 
       // Fetch profile + role with fallback
       try {
         const { profile, role } = await getUserProfile(data.user.id);
+        alert('Data profil berhasil diambil: ' + JSON.stringify({ profile, role }));
         setDebugStatus(`3. Profil & Peran (${role}) diambil. Menyimpan sesi...`);
         setAuthUser({
           id: data.user.id,
@@ -53,6 +57,7 @@ export default function LoginClient() {
           avatarUrl: profile?.avatar_url,
         });
       } catch (profileErr) {
+        alert('Gagal mengambil profil: ' + String(profileErr));
         setDebugStatus('3. Gagal mengambil profil (fallback). Menyimpan sesi...');
         setAuthUser({
           id: data.user.id,
@@ -64,10 +69,12 @@ export default function LoginClient() {
       }
 
       setDebugStatus('4. Sesi disimpan. Mengalihkan ke homepage...');
+      alert('Mencoba melakukan redirect ke homepage...');
       // Always redirect — full page navigation after auth
       window.location.href = '/';
 
     } catch (unexpectedErr) {
+      alert('Error tidak terduga tertangkap: ' + String(unexpectedErr));
       console.error('[Login] unexpected error:', unexpectedErr);
       setError(`Terjadi kesalahan tak terduga: ${unexpectedErr instanceof Error ? unexpectedErr.message : String(unexpectedErr)}`);
       setLoading(false);
