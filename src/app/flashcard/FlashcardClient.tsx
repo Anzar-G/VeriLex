@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCcw, ThumbsUp, ThumbsDown, BookMarked, Settings2, Play, Info } from 'lucide-react';
-import { mockMaxims } from '@/data/mockData';
 import type { Maxim } from '@/types';
 import { useVeriLexStore } from '@/lib/useStore';
+import { supabase } from '@/lib/supabase';
+import { saveFlashcardReview } from '@/lib/learning-data';
 
 export default function FlashcardClient() {
   const [started, setStarted] = useState(false);
@@ -13,14 +14,29 @@ export default function FlashcardClient() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionStats, setSessionStats] = useState({ known: 0, learning: 0 });
-  const { flashcardLevels, setFlashcardLevel } = useVeriLexStore();
+  const { flashcardLevels, setFlashcardLevel, authUser } = useVeriLexStore();
   
   // Settings
   const [mode, setMode] = useState<'latin-to-id' | 'id-to-latin'>('latin-to-id');
 
-  const startSession = () => {
-    // Randomize 20 cards
-    setCards([...mockMaxims].sort(() => 0.5 - Math.random()).slice(0, 20));
+  useEffect(() => {
+    if (!authUser) return;
+    supabase.from('flashcard_progress').select('maxim_id, level').eq('user_id', authUser.id).then(({ data }) => {
+      data?.forEach(row => setFlashcardLevel(row.maxim_id, row.level));
+    });
+  }, [authUser, setFlashcardLevel]);
+
+  const startSession = async () => {
+    const response = await fetch('/api/maxims?limit=100');
+    const payload = await response.json().catch(() => ({ data: [] }));
+    const fetched = (payload.data ?? []).map((row: Record<string, unknown>) => ({
+      id: row.id, latinPhrase: row.latin_phrase, indonesianMeaning: row.indonesian_meaning,
+      literalTranslation: row.literal_translation, pronunciationGuide: row.pronunciation_guide,
+      legalFields: row.legal_fields, legalMeaning: row.legal_meaning, history: row.history,
+      wordByWord: (row.data as Record<string, unknown>)?.wordByWord ?? [], relations: [], caseExamples: [],
+      isActive: row.is_active, createdAt: row.created_at, updatedAt: row.updated_at,
+    })) as Maxim[];
+    setCards(fetched.sort(() => Math.random() - 0.5).slice(0, 20));
     setStarted(true);
     setCurrentIndex(0);
     setIsFlipped(false);
@@ -38,6 +54,7 @@ export default function FlashcardClient() {
       setSessionStats(prev => ({ ...prev, learning: prev.learning + 1 }));
       setFlashcardLevel(currentCard.id, Math.max(currentLevel - 1, 1));
     }
+    if (authUser) void saveFlashcardReview(authUser.id, currentCard.id, currentLevel, known);
 
     if (currentIndex < cards.length - 1) {
       setIsFlipped(false);

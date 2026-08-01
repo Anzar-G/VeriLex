@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireApiActor } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -41,6 +42,8 @@ export async function GET(req: NextRequest) {
 // POST /api/reputation — upsert reputation event
 // Body: { user_id, event: 'edit_accepted' | 'edit_rejected' | 'reference_added' | 'report_valid' }
 export async function POST(req: NextRequest) {
+  const auth = await requireApiActor(req, 'reviewer');
+  if (auth.response) return auth.response;
   const body = await req.json().catch(() => null);
   if (!body || !body.user_id || !body.event) {
     return NextResponse.json({ error: 'user_id and event are required' }, { status: 400 });

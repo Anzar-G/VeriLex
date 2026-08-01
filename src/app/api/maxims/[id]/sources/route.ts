@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireApiActor } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,6 +27,8 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiActor(req, 'editor');
+  if (auth.response) return auth.response;
   const { id } = await params;
   let body: Record<string, unknown>;
   try { body = await req.json(); }
@@ -40,6 +43,7 @@ export async function POST(
     year:        body.year ?? null,
     url:         body.url ?? null,
     description: body.description ?? null,
+    created_by: auth.actor!.id,
   }).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

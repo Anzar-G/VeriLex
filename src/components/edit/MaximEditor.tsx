@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight, Save, X, Loader } from 'lucide-react';
 import type { Maxim, LegalField } from '@/types';
 import { useVeriLexStore } from '@/lib/useStore';
+import { apiFetch } from '@/lib/api-fetch';
 import {
   TextField, TextAreaField, SelectField, MultiSelectField,
   StringListEditor, WordByWordEditor, NestedObjectEditor,
@@ -208,7 +209,7 @@ export default function MaximEditor({ maxim: initial, isDirectSave = true, onSav
     try {
       if (isDirectSave) {
         // ── Editor/Senior Editor/Admin: simpan langsung ke DB ────────────
-        const res = await fetch(`/api/maxims/${initial.id}`, {
+        const res = await apiFetch(`/api/maxims/${initial.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -219,7 +220,7 @@ export default function MaximEditor({ maxim: initial, isDirectSave = true, onSav
         }
       } else {
         // ── Contributor: kirim ke edit_proposals (review queue) ──────────
-        const res = await fetch(`/api/proposals`, {
+        const res = await apiFetch(`/api/proposals`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -315,7 +316,7 @@ export default function MaximEditor({ maxim: initial, isDirectSave = true, onSav
             style={{ width: '100%', border: `1px solid ${editReason.trim() ? '#A2A9B1' : '#C85A54'}`, borderRadius: '2px', padding: '0.375rem 0.625rem', fontSize: '0.875rem', fontFamily: 'var(--font-body)', outline: 'none' }}
           />
           <p style={{ fontSize: '0.6875rem', color: '#72777D', margin: '0.25rem 0 0' }}>
-            Jelaskan secara spesifik apa yang diubah. Hindari alasan umum seperti "update" atau "perbaikan".
+            Jelaskan secara spesifik apa yang diubah. Hindari alasan umum seperti &ldquo;update&rdquo; atau &ldquo;perbaikan&rdquo;.
           </p>
         </div>
 
@@ -330,7 +331,7 @@ export default function MaximEditor({ maxim: initial, isDirectSave = true, onSav
               style={{ width: '100%', border: '1px solid #A2A9B1', borderRadius: '2px', padding: '0.375rem 0.625rem', fontSize: '0.875rem', fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer', backgroundColor: '#FFFFFF' }}
             >
               <option value="">— Pilih dasar (opsional) —</option>
-              <option value="uu">Undang-Undang / Peraturan</option>
+              <option value="undang_undang">Undang-Undang / Peraturan</option>
               <option value="putusan">Putusan Pengadilan (MK/MA)</option>
               <option value="buku">Buku / Literatur</option>
               <option value="jurnal">Jurnal Ilmiah</option>

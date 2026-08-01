@@ -1,15 +1,31 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useVeriLexStore } from '@/lib/useStore';
-import { mockMaxims } from '@/data/mockData';
 import MaximCard from '@/components/maxim/MaximCard';
 import Link from 'next/link';
 import { Star, BookOpen } from 'lucide-react';
+import type { Maxim } from '@/types';
 
 export default function FavoritClient() {
   const { favorites } = useVeriLexStore();
+  const [maxims, setMaxims] = useState<Maxim[]>([]);
 
-  const favoriteMaxims = mockMaxims.filter((m) => favorites.includes(m.id));
+  useEffect(() => {
+    if (!favorites.length) { queueMicrotask(() => setMaxims([])); return; }
+    void fetch('/api/maxims?limit=100').then(response => response.json()).then(payload => {
+      const rows = (payload.data ?? []).filter((row: Record<string, unknown>) => favorites.includes(row.id as string));
+      setMaxims(rows.map((row: Record<string, unknown>) => ({
+        id: row.id, latinPhrase: row.latin_phrase, indonesianMeaning: row.indonesian_meaning,
+        literalTranslation: row.literal_translation, pronunciationGuide: row.pronunciation_guide,
+        legalFields: row.legal_fields, legalMeaning: row.legal_meaning, history: row.history,
+        wordByWord: (row.data as Record<string, unknown>)?.wordByWord ?? [], relations: [], caseExamples: [],
+        isActive: row.is_active, createdAt: row.created_at, updatedAt: row.updated_at,
+      })) as Maxim[]);
+    });
+  }, [favorites]);
+
+  const favoriteMaxims = maxims;
 
   return (
     <main style={{ padding: '2rem' }}>

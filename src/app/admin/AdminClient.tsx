@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Users, Flag, Activity, Search, ChevronLeft, ChevronRight, Lock, Shield, X, Plus, Ban, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useVeriLexStore, hasMinRole, ROLE_LABELS, ROLE_COLORS, type UserRole } from '@/lib/useStore';
+import { apiFetch } from '@/lib/api-fetch';
 import Link from 'next/link';
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -73,7 +74,7 @@ export default function AdminClient() {
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`/api/admin/users?page=${userPage}&q=${encodeURIComponent(searchQ)}`);
+    const res = await apiFetch(`/api/admin/users?page=${userPage}&q=${encodeURIComponent(searchQ)}`);
     const data = await res.json();
     setUsers(data.users ?? []);
     setTotalUsers(data.total ?? 0);
@@ -82,14 +83,14 @@ export default function AdminClient() {
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`/api/reports?status=${reportStatus}`);
+    const res = await apiFetch(`/api/reports?status=${reportStatus}`);
     setReports(await res.json());
     setLoading(false);
   }, [reportStatus]);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
-    const res = await fetch('/api/admin/logs');
+    const res = await apiFetch('/api/admin/logs');
     const data = await res.json();
     setLogs(data.logs ?? []);
     setLoading(false);
@@ -97,14 +98,16 @@ export default function AdminClient() {
 
   useEffect(() => {
     if (!isAdmin) return;
-    if (activeTab === 'users')   fetchUsers();
-    if (activeTab === 'reports') fetchReports();
-    if (activeTab === 'logs')    fetchLogs();
+    queueMicrotask(() => {
+      if (activeTab === 'users') void fetchUsers();
+      if (activeTab === 'reports') void fetchReports();
+      if (activeTab === 'logs') void fetchLogs();
+    });
   }, [activeTab, isAdmin, fetchUsers, fetchReports, fetchLogs]);
 
   async function assignRole(userId: string, role: string) {
     setProcessing(true);
-    await fetch(`/api/admin/users/${userId}/role`, {
+    await apiFetch(`/api/admin/users/${userId}/role`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role }),
@@ -116,7 +119,7 @@ export default function AdminClient() {
   async function revokeRole(userId: string, role: string) {
     if (!confirm(`Cabut role "${ROLE_LABELS[role as UserRole]}" dari user ini?`)) return;
     setProcessing(true);
-    await fetch(`/api/admin/users/${userId}/role?role=${role}`, { method: 'DELETE' });
+    await apiFetch(`/api/admin/users/${userId}/role?role=${role}`, { method: 'DELETE' });
     await fetchUsers();
     setProcessing(false);
   }
@@ -124,7 +127,7 @@ export default function AdminClient() {
   async function issueBan() {
     if (!banModalUser || !banReason.trim()) return;
     setProcessing(true);
-    await fetch(`/api/admin/users/${banModalUser.id}/ban`, {
+    await apiFetch(`/api/admin/users/${banModalUser.id}/ban`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -140,12 +143,12 @@ export default function AdminClient() {
 
   async function liftBan(userId: string) {
     if (!confirm('Cabut ban user ini?')) return;
-    await fetch(`/api/admin/users/${userId}/ban`, { method: 'DELETE' });
+    await apiFetch(`/api/admin/users/${userId}/ban`, { method: 'DELETE' });
     await fetchUsers();
   }
 
   async function handleReport(id: string, status: string) {
-    await fetch(`/api/reports/${id}`, {
+    await apiFetch(`/api/reports/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status, handler_id: authUser?.id }),

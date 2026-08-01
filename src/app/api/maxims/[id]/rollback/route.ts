@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireApiActor, actorDisplayName } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,9 +13,12 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiActor(req, 'senior_editor');
+  if (auth.response) return auth.response;
+  const actor = auth.actor!;
   const { id } = await params;
 
-  let body: { revision_id: string; editor_id?: string; editor_name?: string };
+  let body: { revision_id: string; editor_name?: string };
   try {
     body = await req.json();
   } catch {
@@ -56,12 +60,12 @@ export async function POST(
   await supabase.from('maxim_revisions').insert({
     maxim_id:        id,
     revision_number: revisionNumber,
-    editor_id:       body.editor_id ?? null,
-    editor_name:     body.editor_name ?? 'Sistem',
+    editor_id:       actor.id,
+    editor_name:     actorDisplayName(actor, body.editor_name),
     edit_reason:     `Rollback ke Revisi #${revision.revision_number}`,
     change_basis:    'rollback',
     snapshot:        current,
-    diff_summary:    `Rollback ke versi ${revision.revision_number} oleh ${body.editor_name ?? 'editor'}`,
+    diff_summary:    `Rollback ke versi ${revision.revision_number} oleh ${actorDisplayName(actor, body.editor_name)}`,
     is_rollback:     true,
     rolled_back_from: body.revision_id,
   });

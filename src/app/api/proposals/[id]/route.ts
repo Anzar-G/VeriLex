@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireApiActor } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,9 +12,11 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiActor(req, 'reviewer');
+  if (auth.response) return auth.response;
   const { id } = await params;
 
-  let body: { status: string; reviewer_note?: string; reviewer_id?: string };
+  let body: { status: string; reviewer_note?: string };
   try {
     body = await req.json();
   } catch {
@@ -31,7 +34,7 @@ export async function PATCH(
   };
 
   if (body.reviewer_note) updates['reviewer_note'] = body.reviewer_note;
-  if (body.reviewer_id)   updates['reviewer_id']   = body.reviewer_id;
+  updates['reviewer_id'] = auth.actor!.id;
   if (body.status === 'approved' || body.status === 'rejected') {
     updates['reviewed_at'] = new Date().toISOString();
   }
@@ -55,12 +58,12 @@ export async function PATCH(
     await supabase
       .from('maxims')
       .update({
-        latin_phrase:        proposedData['latin_phrase'],
-        indonesian_meaning:  proposedData['indonesian_meaning'],
-        literal_translation: proposedData['literal_translation'],
-        pronunciation_guide: proposedData['pronunciation_guide'],
-        legal_fields:        proposedData['legal_fields'],
-        legal_meaning:       proposedData['legal_meaning'],
+        latin_phrase:        proposedData['latin_phrase'] ?? proposedData['latinPhrase'],
+        indonesian_meaning:  proposedData['indonesian_meaning'] ?? proposedData['indonesianMeaning'],
+        literal_translation: proposedData['literal_translation'] ?? proposedData['literalTranslation'],
+        pronunciation_guide: proposedData['pronunciation_guide'] ?? proposedData['pronunciationGuide'],
+        legal_fields:        proposedData['legal_fields'] ?? proposedData['legalFields'],
+        legal_meaning:       proposedData['legal_meaning'] ?? proposedData['legalMeaning'],
         history:             proposedData['history'],
         data:                proposedData,
         updated_at:          new Date().toISOString(),
@@ -76,6 +79,8 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiActor(_req, 'reviewer');
+  if (auth.response) return auth.response;
   const { id } = await params;
 
   const { data, error } = await supabase

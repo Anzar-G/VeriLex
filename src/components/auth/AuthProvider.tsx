@@ -11,7 +11,7 @@ import type { UserRole } from '@/lib/useStore';
  * Mount this once in the root layout.
  */
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { setAuthUser, clearAuthUser } = useVeriLexStore();
+  const { setAuthUser, clearAuthUser, hydrateBookmarks } = useVeriLexStore();
 
   useEffect(() => {
     // Restore session on mount
@@ -30,6 +30,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             role: (role as UserRole) || 'contributor',
             avatarUrl: profile?.avatar_url,
           });
+          const { data: bookmarks } = await supabase.from('user_bookmarks').select('maxim_id, note').eq('user_id', user.id);
+          hydrateBookmarks(bookmarks ?? []);
         } catch (err) {
           console.error('[AuthProvider] session restore failed:', err);
           setAuthUser({
@@ -60,6 +62,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
               role: (role as UserRole) || 'contributor',
               avatarUrl: profile?.avatar_url,
             });
+            const { data: bookmarks } = await supabase.from('user_bookmarks').select('maxim_id, note').eq('user_id', session.user.id);
+            hydrateBookmarks(bookmarks ?? []);
           } catch (err) {
             console.error('[AuthProvider] getUserProfile failed:', err);
             setAuthUser({
@@ -79,7 +83,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     });
 
     return () => subscription.unsubscribe();
-  }, [setAuthUser, clearAuthUser]);
+  }, [setAuthUser, clearAuthUser, hydrateBookmarks]);
 
   return <>{children}</>;
 }

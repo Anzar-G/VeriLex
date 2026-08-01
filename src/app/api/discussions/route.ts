@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { actorDisplayName, requireApiActor } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,16 +29,18 @@ export async function GET(req: NextRequest) {
 
 // POST /api/discussions
 export async function POST(req: NextRequest) {
+  const auth = await requireApiActor(req);
+  if (auth.response) return auth.response;
   const body = await req.json().catch(() => null);
   if (!body || !body.maxim_id || !body.content) {
     return NextResponse.json({ error: 'maxim_id and content are required' }, { status: 400 });
   }
 
-  const { maxim_id, parent_id = null, author_id = null, author_name = 'Anonim', content } = body;
+  const { maxim_id, parent_id = null, author_name, content } = body;
 
   const { data, error } = await supabase
     .from('discussions')
-    .insert({ maxim_id, parent_id, author_id, author_name, content })
+    .insert({ maxim_id, parent_id, author_id: auth.actor!.id, author_name: actorDisplayName(auth.actor!, author_name), content })
     .select()
     .single();
 
@@ -49,14 +52,20 @@ export async function POST(req: NextRequest) {
 
 // PATCH /api/discussions — soft-delete
 export async function PATCH(req: NextRequest) {
+  const auth = await requireApiActor(req);
+  if (auth.response) return auth.response;
   const body = await req.json().catch(() => null);
   if (!body || !body.id) {
     return NextResponse.json({ error: 'id is required' }, { status: 400 });
   }
 
+  const existing = await supabase.from('discussions').select('author_id').eq('id', body.id).maybeSingle();
+  if (!existing.data || (existing.data.author_id !== auth.actor!.id && !['editor', 'senior_editor', 'administrator'].includes(auth.actor!.role))) {
+    return NextResponse.json({ error: 'Tidak berwenang menghapus diskusi ini' }, { status: 403 });
+  }
   const { data, error } = await supabase
     .from('discussions')
-    .update({ is_deleted: true, updated_at: new Date().toISOString() })
+    .update({ is_deleted: true, deleted_by: auth.actor!.id, updated_at: new Date().toISOString() })
     .eq('id', body.id)
     .select()
     .single();

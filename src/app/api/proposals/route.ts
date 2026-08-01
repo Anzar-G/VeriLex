@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireApiActor } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,6 +9,8 @@ const supabase = createClient(
 
 // ── POST /api/proposals — Contributor submits an edit proposal ─────────────
 export async function POST(req: Request) {
+  const auth = await requireApiActor(req, 'contributor');
+  if (auth.response) return auth.response;
   let body: { maxim_id: string; change_summary?: string; proposed_data: Record<string, unknown> };
   try {
     body = await req.json();
@@ -25,6 +28,7 @@ export async function POST(req: Request) {
       maxim_id:       body.maxim_id,
       change_summary: body.change_summary ?? 'Revisi oleh kontributor',
       proposed_data:  body.proposed_data,
+      proposer_id:    auth.actor!.id,
       status:         'pending',
     })
     .select()
@@ -40,6 +44,8 @@ export async function POST(req: Request) {
 
 // ── GET /api/proposals — list pending proposals (for review queue) ─────────
 export async function GET(req: Request) {
+  const auth = await requireApiActor(req, 'reviewer');
+  if (auth.response) return auth.response;
   const { searchParams } = new URL(req.url);
   const status   = searchParams.get('status')   ?? 'pending';
   const maxim_id = searchParams.get('maxim_id') ?? undefined;

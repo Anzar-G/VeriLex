@@ -42,6 +42,7 @@ interface VeriLexState {
   favorites: string[];
   toggleFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
+  hydrateBookmarks: (bookmarks: { maxim_id: string; note: string | null }[]) => void;
   
   // Custom user notes / bookmarks
   notes: Record<string, string>;
@@ -88,6 +89,13 @@ export const useVeriLexStore = create<VeriLexState>()(
       toggleFavorite: (id: string) =>
         set((state) => {
           const exists = state.favorites.includes(id);
+          if (state.authUser) {
+            if (exists) {
+              void supabase.from('user_bookmarks').delete().eq('user_id', state.authUser.id).eq('maxim_id', id);
+            } else {
+              void supabase.from('user_bookmarks').upsert({ user_id: state.authUser.id, maxim_id: id, note: state.notes[id] ?? null, updated_at: new Date().toISOString() });
+            }
+          }
           return {
             favorites: exists
               ? state.favorites.filter((favId) => favId !== id)
@@ -95,12 +103,19 @@ export const useVeriLexStore = create<VeriLexState>()(
           };
         }),
       isFavorite: (id: string) => get().favorites.includes(id),
+      hydrateBookmarks: (bookmarks) => set(() => ({
+        favorites: bookmarks.map(bookmark => bookmark.maxim_id),
+        notes: Object.fromEntries(bookmarks.filter(bookmark => bookmark.note).map(bookmark => [bookmark.maxim_id, bookmark.note!])),
+      })),
 
       notes: {},
       setNote: (id: string, note: string) =>
-        set((state) => ({
-          notes: { ...state.notes, [id]: note },
-        })),
+        set((state) => {
+          if (state.authUser) {
+            void supabase.from('user_bookmarks').upsert({ user_id: state.authUser.id, maxim_id: id, note, updated_at: new Date().toISOString() });
+          }
+          return { notes: { ...state.notes, [id]: note } };
+        }),
 
       // ── Supabase Auth ────────────────────────────────────────────────
       authUser: null,

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Flag, X, Send } from 'lucide-react';
 import { useVeriLexStore } from '@/lib/useStore';
+import { apiFetch } from '@/lib/api-fetch';
 
 const CATEGORIES = [
   { value: 'hoaks',            label: 'Hoaks / Informasi Palsu' },
@@ -30,7 +31,7 @@ export default function ReportButton({ maximId }: { maximId: string }) {
     if (!category || !desc.trim()) { setError('Pilih kategori dan isi deskripsi.'); return; }
     setSending(true); setError(null);
 
-    const res = await fetch('/api/reports', {
+    const res = await apiFetch('/api/reports', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

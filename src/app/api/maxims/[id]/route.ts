@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireApiActor, actorDisplayName } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,6 +12,15 @@ const TOP_LEVEL_COLS = new Set([
   'pronunciation_guide', 'legal_fields', 'legal_meaning',
   'history', 'is_active', 'status', 'difficulty',
 ]);
+const CLIENT_TO_DB_COLUMN: Record<string, string> = {
+  latinPhrase: 'latin_phrase',
+  indonesianMeaning: 'indonesian_meaning',
+  literalTranslation: 'literal_translation',
+  pronunciationGuide: 'pronunciation_guide',
+  legalFields: 'legal_fields',
+  legalMeaning: 'legal_meaning',
+  isActive: 'is_active',
+};
 
 // ── GET /api/maxims/[id] ─────────────────────────────────────────────────
 export async function GET(
@@ -33,6 +43,9 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiActor(req, 'editor');
+  if (auth.response) return auth.response;
+  const actor = auth.actor!;
   const { id } = await params;
 
   let body: Record<string, unknown>;
@@ -46,8 +59,7 @@ export async function PUT(
   const editReason      = body['edit_reason']         as string | undefined;
   const changeBasis     = body['change_basis']         as string | undefined;
   const changeBasisDetail = body['change_basis_detail'] as string | undefined;
-  const editorId        = body['editor_id']            as string | undefined;
-  const editorName      = body['editor_name']          as string | undefined;
+  const editorName      = actorDisplayName(actor, body['editor_name']);
 
   if (!editReason?.trim()) {
     return NextResponse.json({ error: 'edit_reason wajib diisi' }, { status: 400 });
@@ -73,8 +85,9 @@ export async function PUT(
 
   for (const [key, value] of Object.entries(body)) {
     if (SKIP_FIELDS.has(key)) continue;
-    if (TOP_LEVEL_COLS.has(key)) {
-      colUpdates[key] = value;
+    const column = CLIENT_TO_DB_COLUMN[key] ?? key;
+    if (TOP_LEVEL_COLS.has(column)) {
+      colUpdates[column] = value;
     } else {
       dataUpdates[key] = value;
     }
@@ -101,8 +114,8 @@ export async function PUT(
     .insert({
       maxim_id:            id,
       revision_number:     revisionNumber,
-      editor_id:           editorId ?? null,
-      editor_name:         editorName ?? 'Anonim',
+      editor_id:           actor.id,
+      editor_name:         editorName,
       edit_reason:         editReason,
       change_basis:        changeBasis ?? null,
       change_basis_detail: changeBasisDetail ?? null,
@@ -115,7 +128,7 @@ export async function PUT(
 
   if (revErr) {
     console.error('[PUT /api/maxims] revision error:', revErr);
-    // Don't fail the whole request for revision errors
+    return NextResponse.json({ error: `Gagal mencatat riwayat sunting: ${revErr.message}` }, { status: 500 });
   }
 
   // 4. Point current_revision_id to the NEW revision

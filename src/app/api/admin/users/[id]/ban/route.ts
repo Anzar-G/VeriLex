@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { actorDisplayName, requireApiActor } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,11 +12,12 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiActor(req, 'administrator');
+  if (auth.response) return auth.response;
   const { id } = await params;
   let body: {
     ban_type: 'warning' | 'temporary' | 'permanent';
     reason: string;
-    issued_by?: string;
     issued_by_name?: string;
     duration_days?: number;
   };
@@ -43,8 +45,8 @@ export async function POST(
     user_id:        id,
     ban_type:       body.ban_type,
     reason:         body.reason,
-    issued_by:      body.issued_by ?? null,
-    issued_by_name: body.issued_by_name ?? 'Administrator',
+    issued_by:      auth.actor!.id,
+    issued_by_name: actorDisplayName(auth.actor!, body.issued_by_name),
     expires_at,
     is_active:      true,
   }).select().single();
@@ -53,8 +55,8 @@ export async function POST(
 
   // Log activity
   await supabase.from('activity_logs').insert({
-    user_id:     body.issued_by ?? null,
-    user_name:   body.issued_by_name ?? 'Administrator',
+    user_id:     auth.actor!.id,
+    user_name:   actorDisplayName(auth.actor!, body.issued_by_name),
     action:      `ban_${body.ban_type}`,
     target_type: 'user',
     target_id:   id,
@@ -69,6 +71,8 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiActor(_req, 'administrator');
+  if (auth.response) return auth.response;
   const { id } = await params;
   const { error } = await supabase.from('user_bans')
     .update({ is_active: false })

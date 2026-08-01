@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ClipboardList, CheckCircle, XCircle, Clock, Eye, RefreshCw, Lock } from 'lucide-react';
 import { useVeriLexStore, hasMinRole, ROLE_LABELS, ROLE_COLORS } from '@/lib/useStore';
+import { apiFetch } from '@/lib/api-fetch';
 
 interface Proposal {
   id: string;
@@ -45,7 +46,7 @@ export default function ReviewerDashboardClient() {
   async function fetchProposals() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/proposals?status=${activeStatus}`);
+      const res = await apiFetch(`/api/proposals?status=${activeStatus}`);
       const data = await res.json();
       setProposals(data);
     } finally {
@@ -56,7 +57,7 @@ export default function ReviewerDashboardClient() {
   async function updateProposalStatus(id: string, status: 'approved' | 'rejected' | 'under_review', note?: string) {
     setProcessing(id);
     try {
-      const res = await fetch(`/api/proposals/${id}`, {
+      const res = await apiFetch(`/api/proposals/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

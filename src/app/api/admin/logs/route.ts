@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireApiActor } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,6 +8,8 @@ const supabase = createClient(
 );
 
 export async function GET(req: Request) {
+  const auth = await requireApiActor(req, 'administrator');
+  if (auth.response) return auth.response;
   const { searchParams } = new URL(req.url);
   const page  = parseInt(searchParams.get('page') ?? '1');
   const limit = 50;
@@ -23,6 +26,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireApiActor(req, 'administrator');
+  if (auth.response) return auth.response;
   let body: Record<string, unknown>;
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }

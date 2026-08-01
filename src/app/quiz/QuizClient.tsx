@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Trophy, ArrowRight, HelpCircle, GraduationCap } from 'lucide-react';
-import { mockQuizQuestions } from '@/data/mockData';
 import type { QuizQuestion } from '@/types';
 import { useVeriLexStore } from '@/lib/useStore';
+import { apiFetch } from '@/lib/api-fetch';
 
 export default function QuizClient() {
   const [started, setStarted] = useState(false);
@@ -15,15 +15,25 @@ export default function QuizClient() {
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [answers, setAnswers] = useState<{ questionId: string; optionIndex: number }[]>([]);
   const { addQuizScore } = useVeriLexStore();
 
-  const startQuiz = () => {
-    setQuestions([...mockQuizQuestions].sort(() => 0.5 - Math.random()).slice(0, 5));
+  const startQuiz = async () => {
+    const response = await apiFetch('/api/quiz?limit=5');
+    const payload = await response.json().catch(() => ({ data: [] }));
+    const dynamicQuestions = (payload.data ?? []).map((row: Record<string, unknown>) => ({
+      id: row.id, maximId: row.maxim_id ?? '', question: row.prompt, options: row.options,
+      correctIndex: row.correct_option_index, explanation: row.explanation ?? '', legalField: 'umum',
+      difficulty: row.difficulty === 'lanjutan' ? 'sulit' : row.difficulty === 'menengah' ? 'sedang' : 'mudah',
+    })) as QuizQuestion[];
+    if (!dynamicQuestions.length) return;
+    setQuestions(dynamicQuestions);
     setStarted(true);
     setCurrentQuestionIndex(0);
     setSelectedOption(null);
     setIsAnswered(false);
     setScore(0);
+    setAnswers([]);
     setShowResults(false);
   };
 
@@ -36,6 +46,7 @@ export default function QuizClient() {
     if (selectedOption === null || isAnswered) return;
     
     setIsAnswered(true);
+    setAnswers(previous => [...previous, { questionId: questions[currentQuestionIndex].id, optionIndex: selectedOption }]);
     if (selectedOption === questions[currentQuestionIndex].correctIndex) {
       setScore(prev => prev + 1);
     }
@@ -50,6 +61,8 @@ export default function QuizClient() {
       const finalScore = score + (selectedOption === questions[currentQuestionIndex].correctIndex ? 1 : 0);
       const percentage = Math.round((finalScore / questions.length) * 100);
       addQuizScore(percentage);
+      const attemptAnswers = [...answers, { questionId: questions[currentQuestionIndex].id, optionIndex: selectedOption! }];
+      void apiFetch('/api/quiz', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ answers: attemptAnswers }) });
       setShowResults(true);
     }
   };

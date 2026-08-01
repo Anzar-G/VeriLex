@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireApiActor } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,6 +12,8 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiActor(req, 'administrator');
+  if (auth.response) return auth.response;
   const { id } = await params;
   let body: { role: string; legal_fields?: string[] };
   try { body = await req.json(); }
@@ -31,6 +34,8 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiActor(req, 'administrator');
+  if (auth.response) return auth.response;
   const { id } = await params;
   const { searchParams } = new URL(req.url);
   const role = searchParams.get('role');

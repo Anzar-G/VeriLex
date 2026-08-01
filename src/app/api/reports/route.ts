@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { actorDisplayName, requireApiActor } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,11 +9,12 @@ const supabase = createClient(
 
 // ── POST /api/reports ─────────────────────────────────────────────────────
 export async function POST(req: Request) {
+  const auth = await requireApiActor(req);
+  if (auth.response) return auth.response;
   let body: {
     maxim_id: string;
     category: string;
     description: string;
-    reporter_id?: string;
     reporter_name?: string;
   };
   try { body = await req.json(); }
@@ -26,8 +28,8 @@ export async function POST(req: Request) {
     maxim_id:      body.maxim_id,
     category:      body.category,
     description:   body.description,
-    reporter_id:   body.reporter_id ?? null,
-    reporter_name: body.reporter_name ?? 'Anonim',
+    reporter_id:   auth.actor!.id,
+    reporter_name: actorDisplayName(auth.actor!, body.reporter_name),
     status:        'menunggu',
   }).select().single();
 
@@ -37,6 +39,8 @@ export async function POST(req: Request) {
 
 // ── GET /api/reports ──────────────────────────────────────────────────────
 export async function GET(req: Request) {
+  const auth = await requireApiActor(req, 'reviewer');
+  if (auth.response) return auth.response;
   const { searchParams } = new URL(req.url);
   const status   = searchParams.get('status') ?? 'menunggu';
   const maxim_id = searchParams.get('maxim_id');

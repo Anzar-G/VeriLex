@@ -4,11 +4,21 @@ import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal, X, ChevronDown, Star, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { searchMaxims, legalFields } from '@/data/mockData';
+import { legalFields } from '@/data/mockData';
 import type { LegalField } from '@/types';
 import { useVeriLexStore } from '@/lib/useStore';
 
 type SortOption = 'relevansi' | 'abjad' | 'terbaru';
+type SearchMaxim = {
+  id: string;
+  latinPhrase: string;
+  indonesianMeaning: string;
+  literalTranslation: string;
+  pronunciationGuide: string;
+  legalFields: LegalField[];
+  legalMeaning: string;
+  updatedAt: string;
+};
 
 const fieldLabels: Record<string, string> = {
   'umum': 'Asas Umum & Penafsiran',
@@ -54,7 +64,7 @@ const fieldColors: Record<string, { bg: string; border: string; text: string; ic
 
 // ── MaximCard inline (compact for grid view) ──────────────────────────────
 function MaximGridCard({ maxim, isFav, onToggleFav }: {
-  maxim: ReturnType<typeof searchMaxims>[number];
+  maxim: SearchMaxim;
   isFav: boolean;
   onToggleFav: () => void;
 }) {
@@ -140,7 +150,7 @@ function MaximGridCard({ maxim, isFav, onToggleFav }: {
 
 // ── MaximCard for list view ────────────────────────────────────────────────
 function MaximListCard({ maxim, isFav, onToggleFav }: {
-  maxim: ReturnType<typeof searchMaxims>[number];
+  maxim: SearchMaxim;
   isFav: boolean;
   onToggleFav: () => void;
 }) {
@@ -253,6 +263,24 @@ function SearchContent() {
   const [currentPage,     setCurrentPage]     = useState(1);
   const [viewMode,        setViewMode]        = useState<'grid' | 'list'>('list');
   const [alphaFilter,     setAlphaFilter]     = useState('');
+  const [remoteMaxims,    setRemoteMaxims]    = useState<SearchMaxim[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const params = new URLSearchParams({ limit: '100' });
+    if (query) params.set('q', query);
+    if (selectedFields.length) params.set('fields', selectedFields.join(','));
+    if (sortBy === 'abjad') params.set('sort', 'alpha');
+    void fetch(`/api/maxims?${params}`).then(response => response.json()).then(payload => {
+      if (cancelled) return;
+      setRemoteMaxims((payload.data ?? []).map((row: Record<string, unknown>) => ({
+        id: row.id, latinPhrase: row.latin_phrase, indonesianMeaning: row.indonesian_meaning,
+        literalTranslation: row.literal_translation, pronunciationGuide: row.pronunciation_guide,
+        legalFields: row.legal_fields, legalMeaning: row.legal_meaning, updatedAt: row.updated_at,
+      })));
+    });
+    return () => { cancelled = true; };
+  }, [query, selectedFields, sortBy]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -269,7 +297,7 @@ function SearchContent() {
   }
 
   // Derive results
-  let results = searchMaxims(query, selectedFields);
+  let results = remoteMaxims;
 
   // Apply alpha filter on top
   if (alphaFilter) {

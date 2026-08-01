@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { History, RotateCcw, ChevronDown, ChevronUp, User, Calendar, FileText, AlertTriangle } from 'lucide-react';
 import { useVeriLexStore, hasMinRole } from '@/lib/useStore';
+import { apiFetch } from '@/lib/api-fetch';
 
 interface Revision {
   id: string;
@@ -18,6 +19,7 @@ interface Revision {
 
 const BASIS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   'uu':       { label: 'Undang-Undang',   color: '#065F46', bg: '#ECFDF5' },
+  'undang_undang': { label: 'Undang-Undang', color: '#065F46', bg: '#ECFDF5' },
   'putusan':  { label: 'Putusan',         color: '#1E40AF', bg: '#EFF6FF' },
   'buku':     { label: 'Buku',            color: '#92400E', bg: '#FFFBEB' },
   'jurnal':   { label: 'Jurnal',          color: '#6B21A8', bg: '#FDF4FF' },
@@ -39,10 +41,10 @@ export default function RevisionHistory({ maximId, maximLatinPhrase }: Props) {
   const [successMsg,   setSuccessMsg]   = useState<string | null>(null);
   const [errorMsg,     setErrorMsg]     = useState<string | null>(null);
 
-  const canRollback = authUser ? hasMinRole(authUser.role, 'editor') : false;
+  const canRollback = authUser ? hasMinRole(authUser.role, 'senior_editor') : false;
 
   useEffect(() => {
-    fetch(`/api/maxims/${maximId}/revisions`)
+    apiFetch(`/api/maxims/${maximId}/revisions`)
       .then(r => r.json())
       .then(data => setRevisions(data))
       .finally(() => setLoading(false));
@@ -55,7 +57,7 @@ export default function RevisionHistory({ maximId, maximLatinPhrase }: Props) {
     setErrorMsg(null);
 
     try {
-      const res = await fetch(`/api/maxims/${maximId}/rollback`, {
+      const res = await apiFetch(`/api/maxims/${maximId}/rollback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

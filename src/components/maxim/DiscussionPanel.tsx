@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { MessageSquare, Reply, Trash2, ChevronDown, ChevronUp, Send } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import { useVeriLexStore } from '@/lib/useStore';
+import { apiFetch } from '@/lib/api-fetch';
 
 interface Discussion {
   id: string;
@@ -376,22 +376,18 @@ export default function DiscussionPanel({ maximId, latinPhrase }: DiscussionPane
 
   const fetchDiscussions = useCallback(async () => {
     setLoading(true);
-    const { data, error: err } = await supabase
-      .from('discussions')
-      .select('*')
-      .eq('maxim_id', maximId)
-      .order('created_at', { ascending: true });
-
-    if (err) {
+    const response = await fetch(`/api/discussions?maxim_id=${encodeURIComponent(maximId)}`);
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) {
       setError('Gagal memuat diskusi.');
     } else {
-      setDiscussions(data || []);
+      setDiscussions(payload?.data || []);
     }
     setLoading(false);
   }, [maximId]);
 
   useEffect(() => {
-    fetchDiscussions();
+    queueMicrotask(() => { void fetchDiscussions(); });
   }, [fetchDiscussions]);
 
   const handlePost = async (
@@ -399,24 +395,15 @@ export default function DiscussionPanel({ maximId, latinPhrase }: DiscussionPane
     authorName: string,
     parentId: string | null = null
   ) => {
-    const { error: err } = await supabase.from('discussions').insert({
-      maxim_id: maximId,
-      parent_id: parentId,
-      author_id: authUser?.id || null,
-      author_name: authorName || 'Anonim',
-      content,
-    });
-    if (err) throw err;
+    const response = await apiFetch('/api/discussions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ maxim_id: maximId, parent_id: parentId, author_name: authorName, content }) });
+    if (!response.ok) throw new Error('Gagal mengirim diskusi');
     await fetchDiscussions();
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Hapus komentar ini?')) return;
-    const { error: err } = await supabase
-      .from('discussions')
-      .update({ is_deleted: true })
-      .eq('id', id);
-    if (!err) await fetchDiscussions();
+    const response = await apiFetch('/api/discussions', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    if (response.ok) await fetchDiscussions();
   };
 
   const threads = buildThreads(discussions);

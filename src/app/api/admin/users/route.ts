@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireApiActor } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,6 +9,8 @@ const supabase = createClient(
 
 // ── GET /api/admin/users ──────────────────────────────────────────────────
 export async function GET(req: Request) {
+  const auth = await requireApiActor(req, 'administrator');
+  if (auth.response) return auth.response;
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('q') ?? '';
   const page   = parseInt(searchParams.get('page') ?? '1');
