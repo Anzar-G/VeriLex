@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, Loader, LogIn } from 'lucide-react';
-import { signIn, getUserProfile } from '@/lib/auth';
+import { signIn } from '@/lib/auth';
 import { useVeriLexStore } from '@/lib/useStore';
-import type { UserRole } from '@/lib/useStore';
 
 export default function LoginClient() {
   const { setAuthUser } = useVeriLexStore();
@@ -34,29 +33,12 @@ export default function LoginClient() {
         return;
       }
 
-      // Fetch profile + role with fallback
-      try {
-        const { profile, role } = await getUserProfile(data.user.id);
-        setAuthUser({
-          id: data.user.id,
-          email: data.user.email!,
-          username: profile?.username || email.split('@')[0],
-          displayName: profile?.display_name || email.split('@')[0],
-          role: (role as UserRole) || 'contributor',
-          avatarUrl: profile?.avatar_url,
-        });
-      } catch {
-        setAuthUser({
-          id: data.user.id,
-          email: data.user.email!,
-          username: email.split('@')[0],
-          displayName: email.split('@')[0],
-          role: 'contributor',
-        });
-      }
-
-      // Full page navigation so the server-rendered shell picks up the session
-      window.location.href = '/';
+      // Do not query profile/role here. Supabase emits SIGNED_IN while this
+      // handler runs, and nested Supabase queries can deadlock the auth lock.
+      // AuthProvider enriches the identity after navigation.
+      const fallbackName = data.user.email?.split('@')[0] || email.split('@')[0];
+      setAuthUser({ id: data.user.id, email: data.user.email || email, username: fallbackName, displayName: fallbackName, role: 'reader' });
+      window.location.assign('/');
 
     } catch (unexpectedErr) {
       setError(`Terjadi kesalahan tak terduga: ${unexpectedErr instanceof Error ? unexpectedErr.message : String(unexpectedErr)}`);
