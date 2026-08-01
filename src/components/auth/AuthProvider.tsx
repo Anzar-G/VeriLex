@@ -18,22 +18,25 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     supabase.auth.getSession().then(async ({ data }) => {
       const user = data.session?.user;
       if (user) {
+        const userEmail = user.email || '';
+        const fallbackName = userEmail ? userEmail.split('@')[0] : 'user';
         try {
           const { profile, role } = await getUserProfile(user.id);
           setAuthUser({
             id: user.id,
-            email: user.email!,
-            username: profile?.username || user.email!.split('@')[0],
-            displayName: profile?.display_name || user.email!.split('@')[0],
+            email: userEmail,
+            username: profile?.username || fallbackName,
+            displayName: profile?.display_name || fallbackName,
             role: (role as UserRole) || 'contributor',
             avatarUrl: profile?.avatar_url,
           });
-        } catch {
+        } catch (err) {
+          console.error('[AuthProvider] session restore failed:', err);
           setAuthUser({
             id: user.id,
-            email: user.email!,
-            username: user.email!.split('@')[0],
-            displayName: user.email!.split('@')[0],
+            email: userEmail,
+            username: fallbackName,
+            displayName: fallbackName,
             role: 'contributor',
           });
         }
@@ -42,28 +45,36 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        try {
-          const { profile, role } = await getUserProfile(session.user.id);
-          setAuthUser({
-            id: session.user.id,
-            email: session.user.email!,
-            username: profile?.username || session.user.email!.split('@')[0],
-            displayName: profile?.display_name || session.user.email!.split('@')[0],
-            role: (role as UserRole) || 'contributor',
-            avatarUrl: profile?.avatar_url,
-          });
-        } catch {
-          setAuthUser({
-            id: session.user.id,
-            email: session.user.email!,
-            username: session.user.email!.split('@')[0],
-            displayName: session.user.email!.split('@')[0],
-            role: 'contributor',
-          });
+      try {
+        if (event === 'SIGNED_IN' && session?.user) {
+          const userEmail = session.user.email || '';
+          const fallbackName = userEmail ? userEmail.split('@')[0] : 'user';
+
+          try {
+            const { profile, role } = await getUserProfile(session.user.id);
+            setAuthUser({
+              id: session.user.id,
+              email: userEmail,
+              username: profile?.username || fallbackName,
+              displayName: profile?.display_name || fallbackName,
+              role: (role as UserRole) || 'contributor',
+              avatarUrl: profile?.avatar_url,
+            });
+          } catch (err) {
+            console.error('[AuthProvider] getUserProfile failed:', err);
+            setAuthUser({
+              id: session.user.id,
+              email: userEmail,
+              username: fallbackName,
+              displayName: fallbackName,
+              role: 'contributor',
+            });
+          }
+        } else if (event === 'SIGNED_OUT') {
+          clearAuthUser();
         }
-      } else if (event === 'SIGNED_OUT') {
-        clearAuthUser();
+      } catch (globalErr) {
+        console.error('[AuthProvider] auth state change handling failed:', globalErr);
       }
     });
 

@@ -15,11 +15,13 @@ export default function LoginClient() {
   const [showPass, setShowPass] = useState(false);
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState<string | null>(null);
+  const [debugStatus, setDebugStatus] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setDebugStatus('1. Menghubungi Supabase Auth...');
 
     try {
       const { data, error: authErr } = await signIn(email, password);
@@ -32,13 +34,16 @@ export default function LoginClient() {
             : authErr?.message || 'Terjadi kesalahan. Coba lagi.'
         );
         setLoading(false);
+        setDebugStatus(null);
         return;
       }
+
+      setDebugStatus('2. Berhasil login. Mengambil data profil...');
 
       // Fetch profile + role with fallback
       try {
         const { profile, role } = await getUserProfile(data.user.id);
-        console.log('[Login] profile fetched, role:', role);
+        setDebugStatus(`3. Profil & Peran (${role}) diambil. Menyimpan sesi...`);
         setAuthUser({
           id: data.user.id,
           email: data.user.email!,
@@ -48,7 +53,7 @@ export default function LoginClient() {
           avatarUrl: profile?.avatar_url,
         });
       } catch (profileErr) {
-        console.log('[Login] profile fetch failed, using fallback:', profileErr);
+        setDebugStatus('3. Gagal mengambil profil (fallback). Menyimpan sesi...');
         setAuthUser({
           id: data.user.id,
           email: data.user.email!,
@@ -58,14 +63,15 @@ export default function LoginClient() {
         });
       }
 
-      console.log('[Login] redirecting to /');
+      setDebugStatus('4. Sesi disimpan. Mengalihkan ke homepage...');
       // Always redirect — full page navigation after auth
       window.location.href = '/';
 
     } catch (unexpectedErr) {
       console.error('[Login] unexpected error:', unexpectedErr);
-      setError('Terjadi kesalahan tak terduga. Silakan coba lagi.');
+      setError(`Terjadi kesalahan tak terduga: ${unexpectedErr instanceof Error ? unexpectedErr.message : String(unexpectedErr)}`);
       setLoading(false);
+      setDebugStatus(null);
     }
   }
 
@@ -127,6 +133,12 @@ export default function LoginClient() {
                 : <><LogIn size={15} /> Masuk</>
               }
             </button>
+
+            {debugStatus && (
+              <div style={{ fontSize: '0.75rem', color: 'var(--wiki-blue)', padding: '0.5rem 0.75rem', border: '1px solid #BFDBFE', backgroundColor: '#EFF6FF', fontFamily: 'var(--font-mono)', textAlign: 'center', wordBreak: 'break-all' }}>
+                {debugStatus}
+              </div>
+            )}
 
           </form>
 
