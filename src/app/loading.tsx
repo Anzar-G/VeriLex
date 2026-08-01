@@ -22,11 +22,12 @@ export default function Loading() {
           alt="VeriLex Logo Loading"
           className="pulse-logo"
           style={{
-            height: '110px',
-            width: '110px',
-            borderRadius: '16px',
-            objectFit: 'cover',
-            border: '2px solid var(--navy)',
+            height: '156px',
+            width: '156px',
+            objectFit: 'contain',
+            border: 'none',
+            borderRadius: 0,
+            display: 'block',
             transition: 'transform 0.3s ease',
           }}
         />
