@@ -12,7 +12,7 @@ import type { User } from '@supabase/supabase-js';
  * Mount this once in the root layout.
  */
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { setAuthUser, clearAuthUser, hydrateBookmarks } = useVeriLexStore();
+  const { setAuthUser, hydrateBookmarks } = useVeriLexStore();
 
   useEffect(() => {
     const syncUser = (user: User) => {
@@ -43,11 +43,16 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       // Never await Supabase work inside this callback; it is called while the
       // auth client may hold its internal lock.
       if (event === 'SIGNED_IN' && session?.user) queueMicrotask(() => syncUser(session.user));
-      if (event === 'SIGNED_OUT') clearAuthUser();
+      // `clearAuthUser()` itself calls supabase.auth.signOut(). Calling it
+      // from SIGNED_OUT would re-enter signOut indefinitely and freeze the UI.
+      if (event === 'SIGNED_OUT') {
+        setAuthUser(null);
+        hydrateBookmarks([]);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [setAuthUser, clearAuthUser, hydrateBookmarks]);
+  }, [setAuthUser, hydrateBookmarks]);
 
   return <>{children}</>;
 }
