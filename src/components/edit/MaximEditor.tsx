@@ -320,7 +320,7 @@ export default function MaximEditor({ maxim: initial, isDirectSave = true, onSav
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div className="editor-two-column" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#54595D', marginBottom: '0.25rem' }}>
               Dasar Perubahan
@@ -356,7 +356,7 @@ export default function MaximEditor({ maxim: initial, isDirectSave = true, onSav
       {/* ══ SEKSI 1: Identitas Utama ══ */}
       <Section title="§1 Identitas Utama" defaultOpen>
         <TextField label="Frase Latin Asli" value={latinPhrase} onChange={setLatinPhrase} mono placeholder="Contoh: Lex Posterior Derogat Legi Priori" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div className="editor-two-column" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
           <TextField label="Panduan Fonetis (IPA)" value={pronunciationGuide} onChange={setPronunciationGuide} mono placeholder="/lɛks .../" />
           <TextField label="Arti Literal / Terjemahan Harfiah" value={literalTranslation} onChange={setLiteralTranslation} />
         </div>
@@ -370,7 +370,7 @@ export default function MaximEditor({ maxim: initial, isDirectSave = true, onSav
       {/* ══ SEKSI 2: Klasifikasi ══ */}
       <Section title="§2 Klasifikasi">
         <TextField label="Cabang Hukum" value={classif.legalBranch} onChange={v => setClassif(p => ({ ...p, legalBranch: v }))} placeholder="Contoh: Hukum Tata Negara" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div className="editor-two-column" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
           <SelectField label="Sifat Asas" value={classif.nature}
             onChange={v => setClassif(p => ({ ...p, nature: v as typeof classif.nature }))}
             options={[
@@ -565,7 +565,7 @@ export default function MaximEditor({ maxim: initial, isDirectSave = true, onSav
       </Section>
 
       {/* ── Bottom save bar ── */}
-      <div style={{ position: 'sticky', bottom: 0, backgroundColor: '#FFFFFF', borderTop: '1px solid #A2A9B1', padding: '0.75rem 0', display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '1rem' }}>
+      <div className="editor-action-bar" style={{ position: 'sticky', bottom: 0, backgroundColor: '#FFFFFF', borderTop: '1px solid #A2A9B1', padding: '0.75rem 0', display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '1rem' }}>
         <button type="submit" disabled={saving} className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
           {saving ? <><Loader size={13} /> Menyimpan...</> : <><Save size={13} /> Simpan ke Wiki</>}
         </button>

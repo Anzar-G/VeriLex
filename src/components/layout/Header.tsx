@@ -28,8 +28,8 @@ export default function Header() {
   const roleLabel = authUser ? (ROLE_LABELS[authUser.role] ?? 'Pembaca') : null;
 
   return (
-    <header style={{ backgroundColor: '#F6F6F6', height: '46px', position: 'relative', zIndex: 50, borderBottom: 'none', display: 'flex', alignItems: 'center' }}>
-      <div className="container-page" style={{ display: 'flex', alignItems: 'center', height: '100%', width: '100%', gap: '1.5rem' }}>
+    <header className="site-header" style={{ backgroundColor: '#F6F6F6', height: '46px', position: 'relative', zIndex: 50, borderBottom: 'none', display: 'flex', alignItems: 'center' }}>
+      <div className="container-page site-header-inner" style={{ display: 'flex', alignItems: 'center', height: '100%', width: '100%', gap: '1.5rem' }}>
 
         {/* Mobile toggle */}
         <button className="lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -48,8 +48,13 @@ export default function Header() {
           </Link>
         </div>
 
+        <Link href="/" className="mobile-brand lg:hidden" onClick={() => setMobileMenuOpen(false)}>
+          <img src="/verilex-logo.png" alt="VeriLex" />
+          <span>VeriLex</span>
+        </Link>
+
         {/* Search bar (hidden on homepage & search page) */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+        <div className="header-search-slot" style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
           {!isHomepage && !isSearchPage && (
             <form onSubmit={handleSearchSubmit} style={{ width: '100%', maxWidth: '360px' }} role="search">
               <div style={{ position: 'relative', width: '100%' }}>

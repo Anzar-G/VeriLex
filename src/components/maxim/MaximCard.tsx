@@ -43,7 +43,7 @@ export default function MaximCard({ maxim, compact = false }: MaximCardProps) {
   const isFav = favorites.includes(maxim.id);
 
   return (
-    <article style={{
+    <article className="maxim-card" style={{
       display: 'grid',
       gridTemplateColumns: '1fr auto',
       gap: '0 0.75rem',

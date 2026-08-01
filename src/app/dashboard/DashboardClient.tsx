@@ -46,7 +46,7 @@ export default function DashboardClient() {
   });
 
   return (
-    <main style={{ padding: '2rem', backgroundColor: '#FFFFFF', minHeight: 'calc(100vh - 46px)' }}>
+    <main className="dashboard-page" style={{ padding: '2rem', backgroundColor: '#FFFFFF', minHeight: 'calc(100vh - 46px)' }}>
       <div style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.75rem', color: '#000000', marginBottom: '0.25rem', borderBottom: '1px solid #A2A9B1', paddingBottom: '0.25rem' }}>
           Dashboard Kontribusi &amp; Progres
@@ -57,7 +57,7 @@ export default function DashboardClient() {
       </div>
 
       {/* Stats Cards Grid */}
-      <div style={{ 
+      <div className="dashboard-stat-grid" style={{
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
         gap: '1rem',
@@ -101,7 +101,7 @@ export default function DashboardClient() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+      <div className="dashboard-detail-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
         
         {/* Progress By Field Chart */}
         <section style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.25rem' }}>

@@ -245,7 +245,7 @@ export default function AdminClient() {
             <>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                 {/* Header row */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr auto', gap: '0.5rem', padding: '0.5rem 0.875rem', backgroundColor: '#F8F9FA', border: '1px solid #EAECF0', fontSize: '0.6875rem', fontWeight: 700, color: '#54595D', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <div className="admin-user-row admin-user-heading" style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr auto', gap: '0.5rem', padding: '0.5rem 0.875rem', backgroundColor: '#F8F9FA', border: '1px solid #EAECF0', fontSize: '0.6875rem', fontWeight: 700, color: '#54595D', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   <span>Pengguna</span><span>Role</span><span>Status</span><span>Aksi</span>
                 </div>
                 {users.map(user => {
@@ -255,7 +255,7 @@ export default function AdminClient() {
                   })[0] as UserRole;
                   const rc = ROLE_COLORS[highestRole] ?? ROLE_COLORS.reader;
                   return (
-                    <div key={user.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr auto', gap: '0.5rem', padding: '0.625rem 0.875rem', border: '1px solid #EAECF0', borderTop: 'none', alignItems: 'center', backgroundColor: user.activeBan ? '#FFF8F0' : '#FFFFFF' }}>
+                    <div key={user.id} className="admin-user-row" style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr auto', gap: '0.5rem', padding: '0.625rem 0.875rem', border: '1px solid #EAECF0', borderTop: 'none', alignItems: 'center', backgroundColor: user.activeBan ? '#FFF8F0' : '#FFFFFF' }}>
                       {/* User info */}
                       <div>
                         <div style={{ fontWeight: 700, fontSize: '0.875rem', color: '#202122' }}>{user.display_name || user.username}</div>
@@ -383,7 +383,7 @@ export default function AdminClient() {
               {logs.length === 0 ? (
                 <p style={{ textAlign: 'center', color: '#72777D', padding: '2rem' }}>Belum ada log aktivitas</p>
               ) : logs.map(log => (
-                <div key={log.id} style={{ display: 'grid', gridTemplateColumns: '180px 120px 1fr', gap: '0.5rem', padding: '0.375rem 0.5rem', borderBottom: '1px solid #EAECF0', alignItems: 'baseline' }}>
+                <div key={log.id} className="admin-log-row" style={{ display: 'grid', gridTemplateColumns: '180px 120px 1fr', gap: '0.5rem', padding: '0.375rem 0.5rem', borderBottom: '1px solid #EAECF0', alignItems: 'baseline' }}>
                   <span style={{ color: '#72777D', fontSize: '0.6875rem' }}>
                     {new Date(log.created_at).toLocaleString('id-ID')}
                   </span>

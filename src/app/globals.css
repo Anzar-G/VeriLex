@@ -53,6 +53,7 @@
 
 html {
   scroll-behavior: smooth;
+  min-height: 100%;
 }
 
 body {
@@ -62,6 +63,9 @@ body {
   font-size: 0.875rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── Typography ───────────────────────────── */
@@ -574,11 +578,23 @@ p {
     flex-direction: column;
     align-items: flex-start;
   }
+}
 
-  .footer-bottom-links {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+.footer-bottom-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.footer-bottom-links a {
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .site-footer {
+    /* Keeps a comfortable separation when a page has very little content. */
+    min-width: 100%;
   }
 }
 
@@ -596,4 +612,77 @@ p {
   background: none;
   font: inherit;
   color: inherit;
+}
+
+/* ── Mobile-first refinements ─────────────────────────────────────────── */
+.mobile-brand { display: none; }
+
+@media (max-width: 767px) {
+  body { font-size: 0.9375rem; }
+
+  .container-page { padding-left: 0.875rem; padding-right: 0.875rem; }
+
+  .site-header { height: 54px !important; border-bottom: 1px solid #EAECF0 !important; }
+  .site-header-inner { gap: 0.625rem !important; }
+  .mobile-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--navy);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .mobile-brand img { width: 25px; height: 25px; object-fit: contain; }
+  .header-search-slot { justify-content: flex-end !important; }
+  .header-search-slot form { max-width: 150px !important; }
+
+  h1, .h1 { font-size: 1.45rem; }
+  h2, .h2 { font-size: 1.2rem; }
+
+  .vector-tabs-container { overflow-x: auto; scrollbar-width: none; gap: 0.5rem; }
+  .vector-tabs-container::-webkit-scrollbar { display: none; }
+  .vector-tabs-group { flex-shrink: 0; }
+  .vector-tab-item { white-space: nowrap; min-height: 36px; display: inline-flex; align-items: center; }
+
+  .wiki-main-content { padding: 0.875rem 0.875rem 2rem; min-height: auto; }
+  .wiki-infobox { float: none; width: 100%; margin: 0 0 1rem; }
+  .scope-grid { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+
+  .maxim-card { grid-template-columns: 1fr auto !important; padding: 0.875rem !important; gap: 0.25rem 0.5rem !important; }
+  .maxim-card [style*="white-space: nowrap"] { white-space: normal !important; }
+  .maxim-card p { font-size: 0.8125rem !important; }
+
+  .dashboard-page { padding: 1.125rem 0.875rem !important; }
+  .dashboard-stat-grid { grid-template-columns: 1fr 1fr !important; gap: 0.625rem !important; }
+  .dashboard-stat-grid > div { padding: 0.875rem !important; gap: 0.625rem !important; }
+  .dashboard-detail-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+  .dashboard-detail-grid section { min-width: 0; }
+
+  .editor-two-column { grid-template-columns: 1fr !important; }
+  .editor-action-bar { flex-wrap: wrap; position: static !important; padding: 0.75rem 0 !important; }
+  .editor-action-bar > * { flex: 1 1 150px; justify-content: center; }
+
+  .admin-user-heading { display: none !important; }
+  .admin-user-row { grid-template-columns: 1fr !important; gap: 0.375rem !important; padding: 0.875rem !important; }
+  .admin-user-row > * { min-width: 0; }
+  .admin-log-row { grid-template-columns: 1fr !important; gap: 0.125rem !important; padding: 0.625rem 0 !important; }
+
+  .footer-grid { gap: 1.5rem; }
+  .footer-nav { width: 100%; justify-content: space-between; gap: 1rem; }
+  .footer-nav > div { flex: 1; min-width: 130px; }
+  .footer-bottom { align-items: flex-start; gap: 0.875rem; }
+  .footer-bottom-links { gap: 1rem; }
+
+  table { display: block; max-width: 100%; overflow-x: auto; white-space: nowrap; }
+  input, select, textarea, button { max-width: 100%; }
+}
+
+@media (max-width: 479px) {
+  .header-search-slot { display: none !important; }
+  .site-header-inner { justify-content: flex-start; }
+  .mobile-brand { flex: 1; }
+  .footer-nav { flex-direction: column; }
+  .dashboard-stat-grid { grid-template-columns: 1fr !important; }
 }

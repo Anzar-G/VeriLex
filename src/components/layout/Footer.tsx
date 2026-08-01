@@ -5,12 +5,13 @@ import Link from 'next/link';
 export default function Footer() {
   return (
     <footer
+      className="site-footer"
       style={{
         backgroundColor: '#F8F9FA',
         color: 'var(--steel-muted)',
         borderTop: '1px solid #A2A9B1',
         padding: '1.5rem 0',
-        marginTop: '2rem',
+        marginTop: 'auto',
         fontSize: '0.8125rem',
       }}
     >
