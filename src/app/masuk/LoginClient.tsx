@@ -23,6 +23,7 @@ export default function LoginClient() {
 
     try {
       const { data, error: authErr } = await signIn(email, password);
+      console.log('[Login] signIn result:', { user: data?.user?.id, error: authErr?.message });
 
       if (authErr || !data.user) {
         setError(
@@ -37,6 +38,7 @@ export default function LoginClient() {
       // Fetch profile + role with fallback
       try {
         const { profile, role } = await getUserProfile(data.user.id);
+        console.log('[Login] profile fetched, role:', role);
         setAuthUser({
           id: data.user.id,
           email: data.user.email!,
@@ -45,7 +47,8 @@ export default function LoginClient() {
           role: (role as UserRole) || 'contributor',
           avatarUrl: profile?.avatar_url,
         });
-      } catch {
+      } catch (profileErr) {
+        console.log('[Login] profile fetch failed, using fallback:', profileErr);
         setAuthUser({
           id: data.user.id,
           email: data.user.email!,
@@ -55,11 +58,12 @@ export default function LoginClient() {
         });
       }
 
+      console.log('[Login] redirecting to /');
       // Always redirect — full page navigation after auth
       window.location.href = '/';
 
     } catch (unexpectedErr) {
-      console.error('Login error:', unexpectedErr);
+      console.error('[Login] unexpected error:', unexpectedErr);
       setError('Terjadi kesalahan tak terduga. Silakan coba lagi.');
       setLoading(false);
     }
