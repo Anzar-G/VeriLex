@@ -1,48 +1,42 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { BookOpen, Brain, Trophy, Flame, TrendingUp, BarChart3 } from 'lucide-react';
-import { legalFields, mockMaxims } from '@/data/mockData';
+import { legalFields } from '@/data/mockData';
 import { useVeriLexStore } from '@/lib/useStore';
+import { apiFetch } from '@/lib/api-fetch';
 import PlatformStatsPanel from '@/components/dashboard/PlatformStatsPanel';
 import { EditorLeaderboard } from '@/components/editor/EditorReputation';
 
 export default function DashboardClient() {
-  const { quizScores, flashcardLevels } = useVeriLexStore();
+  const { authUser } = useVeriLexStore();
+  const [progress, setProgress] = useState<{ quizzesTaken:number; averageScore:number; flashcards:{ maxim_id:string; level:number; last_reviewed_at:string | null }[]; levels:Record<number,number>; progressByField:Record<string, number> } | null>(null);
+  const [totalMaxims, setTotalMaxims] = useState(0);
+  useEffect(() => { if (authUser) void apiFetch('/api/me/progress').then(r => r.ok ? r.json() : null).then(setProgress); void fetch('/api/maxims?limit=1').then(r => r.json()).then(r => setTotalMaxims(r.total ?? 0)); }, [authUser]);
 
   // Dynamic calculations from Zustand Store
-  const quizzesTaken = quizScores.length;
-  const averageScore = quizzesTaken > 0
-    ? Math.round(quizScores.reduce((sum, val) => sum + val, 0) / quizzesTaken)
-    : 0;
+  const quizzesTaken = progress?.quizzesTaken ?? 0;
+  const averageScore = progress?.averageScore ?? 0;
 
   // Total Studied = any maxim that exists in flashcard levels or is favorited
-  const studiedCount = Object.keys(flashcardLevels).length;
+  const studiedCount = progress?.flashcards.length ?? 0;
   
-  // Streak is mock-simulated but feels authentic
-  const streakDays = quizzesTaken > 0 ? Math.min(quizzesTaken * 2, 7) : 0;
+  // Streak dihitung dari hari penggunaan flashcard yang benar-benar tercatat.
+  const studyDates = [...new Set((progress?.flashcards ?? []).map(row => row.last_reviewed_at?.slice(0, 10)).filter(Boolean))].sort().reverse();
+  const streakDays = studyDates.length ? studyDates.reduce((streak, date, index) => index === 0 || new Date(studyDates[index - 1]!).getTime() - new Date(date!).getTime() <= 86400000 ? streak + 1 : streak, 0) : 0;
 
-  // Calculate dynamic progress by field: percentage of maxims with level >= 3
+  // Persentase maksim per bidang yang sudah mencapai level flashcard 3 atau lebih.
   const progressByField = legalFields.reduce((acc, field) => {
-    const fieldMaxims = mockMaxims.filter(m => m.legalFields.includes(field.id));
-    if (fieldMaxims.length === 0) {
-      acc[field.id] = 0;
-      return acc;
-    }
-
-    const masteredInField = fieldMaxims.filter(m => {
-      const level = flashcardLevels[m.id] || 0;
-      return level >= 3;
-    });
-
-    acc[field.id] = Math.round((masteredInField.length / fieldMaxims.length) * 100);
+    acc[field.id] = progress?.progressByField[field.id] ?? 0;
     return acc;
   }, {} as Record<string, number>);
 
   // Count levels dynamically (spaced repetition status)
   const levelsCount = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  Object.values(flashcardLevels).forEach(lvl => {
+  Object.entries(progress?.levels ?? {}).forEach(([level, count]) => {
+    const lvl = Number(level);
     const validLvl = Math.max(1, Math.min(5, lvl)) as 1 | 2 | 3 | 4 | 5;
-    levelsCount[validLvl]++;
+    levelsCount[validLvl] += count;
   });
 
   return (
@@ -64,7 +58,7 @@ export default function DashboardClient() {
         marginBottom: '2rem'
       }}>
         {[
-          { label: 'Maksim Dipelajari', value: `${studiedCount} / ${mockMaxims.length}`, icon: BookOpen, color: 'var(--navy)', bgColor: '#EAF3FF' },
+          { label: 'Maksim Dipelajari', value: `${studiedCount} / ${totalMaxims}`, icon: BookOpen, color: 'var(--navy)', bgColor: '#EAF3FF' },
           { label: 'Rata-rata Nilai Kuis', value: `${averageScore}%`, icon: Trophy, color: 'var(--bronze)', bgColor: '#FAF8F3' },
           { label: 'Kuis Diselesaikan', value: quizzesTaken, icon: Brain, color: 'var(--wiki-blue)', bgColor: '#EAF3FF' },
           { label: 'Streak Belajar', value: `${streakDays} Hari`, icon: Flame, color: '#C85A54', bgColor: '#FFEBEE' },

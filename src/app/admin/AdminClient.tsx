@@ -36,6 +36,17 @@ interface ActivityLog {
   created_at: string;
 }
 
+interface RoleRequest {
+  id: string;
+  requested_role: UserRole;
+  legal_fields: string[];
+  motivation: string;
+  qualifications: string | null;
+  status: 'pending' | 'under_review' | 'approved' | 'rejected' | 'withdrawn';
+  created_at: string;
+  profiles: { username: string; display_name: string } | null;
+}
+
 const CATEGORY_LABELS: Record<string, string> = {
   hoaks: 'Hoaks', referensi_salah: 'Referensi Salah',
   salah_kutip_pasal: 'Salah Kutip Pasal', latin_salah: 'Latin Salah',
@@ -45,7 +56,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const ALL_ROLES: UserRole[] = ['reader','contributor','editor','reviewer','senior_editor','subject_expert','administrator'];
 
-type TabType = 'users' | 'reports' | 'logs';
+type TabType = 'users' | 'role_requests' | 'reports' | 'logs';
 
 export default function AdminClient() {
   const { authUser } = useVeriLexStore();
@@ -55,6 +66,7 @@ export default function AdminClient() {
   const [users,       setUsers]       = useState<AdminUser[]>([]);
   const [reports,     setReports]     = useState<Report[]>([]);
   const [logs,        setLogs]        = useState<ActivityLog[]>([]);
+  const [roleRequests, setRoleRequests] = useState<RoleRequest[]>([]);
   const [totalUsers,  setTotalUsers]  = useState(0);
   const [userPage,    setUserPage]    = useState(1);
   const [searchQ,     setSearchQ]     = useState('');
@@ -96,14 +108,23 @@ export default function AdminClient() {
     setLoading(false);
   }, []);
 
+  const fetchRoleRequests = useCallback(async () => {
+    setLoading(true);
+    const res = await apiFetch('/api/role-requests');
+    const data = await res.json();
+    setRoleRequests(data.data ?? []);
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
     if (!isAdmin) return;
     queueMicrotask(() => {
       if (activeTab === 'users') void fetchUsers();
+      if (activeTab === 'role_requests') void fetchRoleRequests();
       if (activeTab === 'reports') void fetchReports();
       if (activeTab === 'logs') void fetchLogs();
     });
-  }, [activeTab, isAdmin, fetchUsers, fetchReports, fetchLogs]);
+  }, [activeTab, isAdmin, fetchUsers, fetchRoleRequests, fetchReports, fetchLogs]);
 
   async function assignRole(userId: string, role: string) {
     setProcessing(true);
@@ -156,6 +177,17 @@ export default function AdminClient() {
     await fetchReports();
   }
 
+  async function handleRoleRequest(id: string, status: 'approved' | 'rejected' | 'under_review') {
+    setProcessing(true);
+    await apiFetch(`/api/role-requests/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    await fetchRoleRequests();
+    setProcessing(false);
+  }
+
   // ── Access guard ─────────────────────────────────────────────────────────
   if (!authUser) {
     return (
@@ -200,6 +232,7 @@ export default function AdminClient() {
       <div style={{ display: 'flex', borderBottom: '1px solid #A2A9B1', marginBottom: '1.25rem' }}>
         {([
           { id: 'users',   label: 'Kelola Pengguna', icon: Users },
+          { id: 'role_requests', label: 'Pengajuan Role', icon: Shield },
           { id: 'reports', label: 'Laporan',          icon: Flag },
           { id: 'logs',    label: 'Log Aktivitas',    icon: Activity },
         ] as { id: TabType; label: string; icon: React.ElementType }[]).map(tab => (
@@ -324,6 +357,48 @@ export default function AdminClient() {
                 </div>
               )}
             </>
+          )}
+        </div>
+      )}
+
+      {/* ══ TAB: ROLE REQUESTS ══ */}
+      {activeTab === 'role_requests' && (
+        <div>
+          <p style={{ color: '#54595D', fontSize: '0.8125rem', margin: '0 0 1rem' }}>
+            Setujui pengajuan untuk menambahkan role pada akun pengguna. Role baru akan aktif saat pengguna memuat ulang sesi.
+          </p>
+          {loading ? <p style={{ color: '#72777D', textAlign: 'center', padding: '2rem' }}>Memuat...</p> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {roleRequests.length === 0 ? (
+                <p style={{ textAlign: 'center', color: '#72777D', padding: '3rem', backgroundColor: '#F8F9FA', border: '1px solid #EAECF0' }}>Belum ada pengajuan role.</p>
+              ) : roleRequests.map(request => {
+                const roleColor = ROLE_COLORS[request.requested_role] ?? ROLE_COLORS.reader;
+                const isOpen = request.status === 'pending' || request.status === 'under_review';
+                return (
+                  <article key={request.id} style={{ border: '1px solid #EAECF0', padding: '1rem', backgroundColor: '#FFFFFF' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                      <div>
+                        <strong style={{ fontSize: '0.9375rem', color: '#202122' }}>{request.profiles?.display_name || request.profiles?.username || 'Pengguna'}</strong>
+                        {request.profiles?.username && <span style={{ fontSize: '0.75rem', color: '#72777D' }}> · @{request.profiles.username}</span>}
+                        <div style={{ marginTop: '0.375rem', display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.6875rem', fontWeight: 700, padding: '0.125rem 0.375rem', backgroundColor: roleColor.bg, color: roleColor.text, border: `1px solid ${roleColor.border}` }}>{ROLE_LABELS[request.requested_role]}</span>
+                          <span style={{ fontSize: '0.6875rem', padding: '0.125rem 0.375rem', border: '1px solid #A2A9B1', color: '#54595D' }}>{request.status === 'pending' ? 'Menunggu' : request.status === 'under_review' ? 'Ditinjau' : request.status === 'approved' ? 'Disetujui' : request.status === 'rejected' ? 'Ditolak' : 'Ditarik'}</span>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', color: '#72777D' }}>{new Date(request.created_at).toLocaleString('id-ID')}</span>
+                    </div>
+                    <p style={{ fontSize: '0.8125rem', color: '#202122', margin: '0.875rem 0 0.375rem', lineHeight: 1.55 }}><strong>Motivasi:</strong> {request.motivation}</p>
+                    {request.qualifications && <p style={{ fontSize: '0.8125rem', color: '#54595D', margin: '0.375rem 0' }}><strong>Kualifikasi:</strong> {request.qualifications}</p>}
+                    {request.legal_fields?.length > 0 && <p style={{ fontSize: '0.75rem', color: '#54595D', margin: '0.375rem 0' }}><strong>Bidang:</strong> {request.legal_fields.join(', ')}</p>}
+                    {isOpen && <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginTop: '0.875rem' }}>
+                      {request.status === 'pending' && <button disabled={processing} onClick={() => handleRoleRequest(request.id, 'under_review')} className="btn-secondary" style={{ padding: '0.375rem 0.625rem', fontSize: '0.75rem' }}>Tandai ditinjau</button>}
+                      <button disabled={processing} onClick={() => handleRoleRequest(request.id, 'approved')} style={{ padding: '0.375rem 0.625rem', border: '1px solid #A7F3D0', backgroundColor: '#ECFDF5', color: '#065F46', cursor: 'pointer', fontSize: '0.75rem' }}>Setujui role</button>
+                      <button disabled={processing} onClick={() => handleRoleRequest(request.id, 'rejected')} style={{ padding: '0.375rem 0.625rem', border: '1px solid #FECACA', backgroundColor: '#FEF2F2', color: '#991B1B', cursor: 'pointer', fontSize: '0.75rem' }}>Tolak</button>
+                    </div>}
+                  </article>
+                );
+              })}
+            </div>
           )}
         </div>
       )}
