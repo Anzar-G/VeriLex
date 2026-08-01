@@ -4,16 +4,27 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import MaximDetailWrapper from './MaximDetailWrapper';
 import { getMaximById, mockMaxims } from '@/data/mockData';
+import { getMaximByIdFromDB } from '@/lib/maxims-server';
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
+// Render dynamically so edits saved to the database are reflected on reload
+// instead of serving a stale build-time snapshot.
+export const dynamic = 'force-dynamic';
+
+// Resolve a maxim by id, preferring the database and falling back to the
+// bundled mock dataset so legacy slugs that only exist in mockData keep working.
+async function resolveMaxim(id: string) {
+  return (await getMaximByIdFromDB(id)) ?? getMaximById(id) ?? null;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const maxim = getMaximById(id);
+  const maxim = await resolveMaxim(id);
   if (!maxim) return { title: 'Maksim tidak ditemukan — VeriLex' };
-  
+
   const canonicalUrl = `https://verilex.vercel.app/maksim/${id}`;
 
   return {
@@ -37,7 +48,7 @@ export async function generateStaticParams() {
 
 export default async function MaximDetailPage({ params }: Props) {
   const { id } = await params;
-  const maxim = getMaximById(id);
+  const maxim = await resolveMaxim(id);
 
   if (!maxim) notFound();
 

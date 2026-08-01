@@ -85,6 +85,9 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
   const [liveMaxim, setLiveMaxim] = useState<Maxim>(initialMaxim);
   const maxim = liveMaxim;
 
+  // ── Save confirmation notice (shown briefly after a successful save) ────
+  const [saveNotice, setSaveNotice] = useState<string | null>(null);
+
   const localNote = notes[maxim.id] || '';
   const [noteText, setNoteText] = useState(localNote);
   const [noteSaved, setNoteSaved] = useState(false);
@@ -199,6 +202,12 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
             </button>
           </div>
         </div>
+
+        {saveNotice && (
+          <div style={{ margin: '0.75rem 0', padding: '0.625rem 0.875rem', backgroundColor: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: '2px', fontSize: '0.8125rem', color: '#166534', lineHeight: 1.5 }}>
+            {saveNotice}
+          </div>
+        )}
 
 
         {/* ══ TAB: BACA ══ */}
@@ -1012,7 +1021,14 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
               <MaximEditor
                 maxim={maxim}
                 isDirectSave={canDirectSave}
-                onSaved={(updated) => { setLiveMaxim(updated); setActiveTab('baca'); }}
+                onSaved={(updated) => {
+                  setLiveMaxim(updated);
+                  setActiveTab('baca');
+                  setSaveNotice(canDirectSave
+                    ? 'Suntingan tersimpan ke wiki.'
+                    : 'Suntingan Anda telah dikirim untuk ditinjau oleh Editor.');
+                  setTimeout(() => setSaveNotice(null), 6000);
+                }}
                 onCancel={() => setActiveTab('baca')}
               />
             </>
