@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { BookOpen, Brain, Trophy, Flame, TrendingUp, BarChart3 } from 'lucide-react';
-import { legalFields } from '@/data/mockData';
+import { useLegalFields } from '@/hooks/useLegalFields';
 import { useVeriLexStore } from '@/lib/useStore';
 import { apiFetch } from '@/lib/api-fetch';
 import PlatformStatsPanel from '@/components/dashboard/PlatformStatsPanel';
@@ -10,6 +10,7 @@ import { EditorLeaderboard } from '@/components/editor/EditorReputation';
 
 export default function DashboardClient() {
   const { authUser } = useVeriLexStore();
+  const { fields: legalFields } = useLegalFields();
   const [progress, setProgress] = useState<{ quizzesTaken:number; averageScore:number; flashcards:{ maxim_id:string; level:number; last_reviewed_at:string | null }[]; levels:Record<number,number>; progressByField:Record<string, number> } | null>(null);
   const [totalMaxims, setTotalMaxims] = useState(0);
   useEffect(() => { if (authUser) void apiFetch('/api/me/progress').then(r => r.ok ? r.json() : null).then(setProgress); void fetch('/api/maxims?limit=1').then(r => r.json()).then(r => setTotalMaxims(r.total ?? 0)); }, [authUser]);

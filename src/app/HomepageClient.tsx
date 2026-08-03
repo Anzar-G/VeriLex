@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Brain, BookMarked, Star, ArrowRight, Scale, Scroll, Globe, BookOpen, Shield, Gavel } from 'lucide-react';
-import { legalFields, mockMaxims } from '@/data/mockData';
 import Sidebar from '@/components/layout/Sidebar';
 import { useVeriLexStore } from '@/lib/useStore';
 import { useFeatured, usePopular, useRecent, rowToMaxim, type MaximSummary } from '@/hooks/useHomepageData';
+import { useLegalFields } from '@/hooks/useLegalFields';
 
 // ── Field icon mapping ──────────────────────────────────────────
 const fieldIcons: Record<string, React.ElementType> = {
@@ -64,12 +64,21 @@ export default function HomepageClient() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeQuote, setActiveQuote] = useState(0);
+  const [totalMaxims, setTotalMaxims] = useState<number | null>(null);
   const { favorites } = useVeriLexStore();
 
   // ── Dynamic data from Supabase ──────────────────────────────────────────
   const { data: featuredRow, loading: featuredLoading } = useFeatured();
   const { data: popularList, loading: popularLoading }  = usePopular(2);
   const { data: recentList,  loading: recentLoading  }  = useRecent(6);
+  const { fields: legalFields } = useLegalFields();
+
+  // Fetch total maxim count from DB
+  useEffect(() => {
+    fetch('/api/maxims?limit=1')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.total != null) setTotalMaxims(d.total); });
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,23 +87,18 @@ export default function HomepageClient() {
     }
   };
 
-  // Fallback to static data while loading or if DB is empty
-  const staticFeatured = mockMaxims.find(m => m.id === 'lex-posterior') || mockMaxims[0];
-  const staticSecond   = mockMaxims.find(m => m.id === 'lex-specialis') || mockMaxims[1];
+  // Featured article — only render when data is available from DB
+  const featuredMaxim = featuredRow ? rowToMaxim(featuredRow) : null;
 
-  const featuredMaxim = featuredRow ? rowToMaxim(featuredRow) : staticFeatured;
-
-  // "Banyak dibaca" — second entry from popular, fallback to staticSecond
+  // "Banyak dibaca" — second entry from popular list
   const secondPopular = popularList[1];
   const secondMaxim = secondPopular
     ? { id: secondPopular.id, latinPhrase: secondPopular.latin_phrase, indonesianMeaning: secondPopular.indonesian_meaning, literalTranslation: secondPopular.literal_translation, legalFields: secondPopular.legal_fields, legalMeaning: secondPopular.indonesian_meaning }
-    : staticSecond;
+    : null;
 
-  // Card grid — recent edits from DB, fallback to static
+  // Card grid — recent edits from DB
   const recentCardData: Array<{ id: string; latinPhrase: string; indonesianMeaning: string; legalFields: string[]; updatedAt?: string }> =
-    recentList.length > 0
-      ? recentList.map(r => ({ id: r.id, latinPhrase: r.latin_phrase, indonesianMeaning: r.indonesian_meaning, legalFields: r.legal_fields, updatedAt: r.updated_at }))
-      : mockMaxims.slice(0, 6).map(m => ({ id: m.id, latinPhrase: m.latinPhrase, indonesianMeaning: m.indonesianMeaning, legalFields: m.legalFields, updatedAt: m.updatedAt }));
+    recentList.map(r => ({ id: r.id, latinPhrase: r.latin_phrase, indonesianMeaning: r.indonesian_meaning, legalFields: r.legal_fields, updatedAt: r.updated_at }));
 
   const quote = heroQuotes[activeQuote];
 
@@ -199,7 +203,7 @@ export default function HomepageClient() {
           {/* Welcome text */}
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: 'rgba(255,255,255,0.7)', margin: '0 0 0.875rem' }}>
             Selamat datang di <strong style={{ color: '#FFFFFF' }}>VeriLex</strong> — ensiklopedia bebas maksim hukum Latin terintegrasi dengan{' '}
-            <strong style={{ color: '#A67C52' }}>{mockMaxims.length}</strong> entri aktif.
+            <strong style={{ color: '#A67C52' }}>{totalMaxims !== null ? totalMaxims.toLocaleString('id-ID') : '—'}</strong> entri aktif.
           </p>
 
           {/* Search */}
@@ -226,6 +230,7 @@ export default function HomepageClient() {
         {/* ═══════════════════════════════════════════════════════
             FEATURED ARTICLE — Full width with asymmetric layout
         ═══════════════════════════════════════════════════════ */}
+        {(featuredLoading || featuredMaxim) && (
         <section style={{ border: '1px solid #A2A9B1', marginBottom: '1.25rem', backgroundColor: '#FFFFFF' }}>
           {/* Section header */}
           <div style={{
@@ -236,11 +241,16 @@ export default function HomepageClient() {
             <h2 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.8125rem', margin: 0, color: '#000' }}>
               ★ Artikel pilihan
             </h2>
-            <Link href={`/maksim/${featuredMaxim.id}`} style={{ fontSize: '0.75rem', color: '#0645AD', textDecoration: 'none' }}>
-              Baca selengkapnya →
-            </Link>
+            {featuredMaxim && (
+              <Link href={`/maksim/${featuredMaxim.id}`} style={{ fontSize: '0.75rem', color: '#0645AD', textDecoration: 'none' }}>
+                Baca selengkapnya →
+              </Link>
+            )}
           </div>
 
+          {featuredLoading && !featuredMaxim ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#72777D', fontSize: '0.875rem' }}>Memuat artikel pilihan...</div>
+          ) : featuredMaxim && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 0 }} className="md:grid-cols-[2fr_1fr]">
             {/* Main text */}
             <div style={{ padding: '1.25rem', borderRight: '0', }} className="md:border-r md:border-[#EAECF0]">
@@ -316,7 +326,9 @@ export default function HomepageClient() {
               ))}
             </div>
           </div>
+          )}
         </section>
+        )}
 
         {/* ═══════════════════════════════════════════════════════
             TWO-COLUMN: Portal Bidang + Modul Pembelajaran
@@ -429,7 +441,7 @@ export default function HomepageClient() {
               </div>
               {popularLoading ? (
                 <div style={{ padding: '1rem', textAlign: 'center', color: '#72777D', fontSize: '0.8125rem' }}>Memuat...</div>
-              ) : (
+              ) : secondMaxim ? (
               <div style={{ padding: '1rem' }}>
                 <Link href={`/maksim/${secondMaxim.id}`} style={{ textDecoration: 'none' }}>
                   <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', color: '#0645AD', margin: '0 0 0.25rem', lineHeight: 1.3 }}>
@@ -448,6 +460,8 @@ export default function HomepageClient() {
                   Baca selengkapnya <ArrowRight size={11} />
                 </Link>
               </div>
+              ) : (
+                <div style={{ padding: '1rem', textAlign: 'center', color: '#72777D', fontSize: '0.8125rem' }}>Belum ada data</div>
               )}
             </section>
           </div>
@@ -576,9 +590,9 @@ export default function HomepageClient() {
             </div>
             <div style={{ padding: '0.875rem', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.625rem' }}>
               {[
-                { value: mockMaxims.length.toString(), label: 'Total Entri' },
-                { value: legalFields.length.toString(), label: 'Bidang Hukum' },
-                { value: '2', label: 'Entri Lengkap' },
+                { value: totalMaxims !== null ? totalMaxims.toLocaleString('id-ID') : '—', label: 'Total Entri' },
+                { value: legalFields.length > 0 ? legalFields.length.toString() : '—', label: 'Bidang Hukum' },
+                { value: legalFields.filter(f => f.count > 0).length.toString() || '—', label: 'Bidang Aktif' },
                 { value: '∞', label: 'Terus Berkembang' },
               ].map(stat => (
                 <div key={stat.label} style={{

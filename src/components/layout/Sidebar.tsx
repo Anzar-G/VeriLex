@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useVeriLexStore, hasMinRole } from '@/lib/useStore';
+import { useLegalFields } from '@/hooks/useLegalFields';
 
 const mainNavigation = [
   { label: 'Halaman Utama', href: '/' },
@@ -10,13 +11,6 @@ const mainNavigation = [
   { label: 'Quiz Interaktif', href: '/quiz' },
   { label: 'Flashcard SRA', href: '/flashcard' },
   { label: 'Dashboard Progres', href: '/dashboard' },
-];
-const legalFields = [
-  { label: 'Hukum Pidana', href: '/cari?bidang=pidana' },
-  { label: 'Hukum Perdata', href: '/cari?bidang=perdata' },
-  { label: 'Hukum Tata Negara', href: '/cari?bidang=tata-negara' },
-  { label: 'Hukum Internasional', href: '/cari?bidang=internasional' },
-  { label: 'Hukum Administrasi', href: '/cari?bidang=administrasi' },
 ];
 
 const helpItems = [
@@ -28,6 +22,7 @@ const helpItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { favorites, authUser } = useVeriLexStore();
+  const { fields: legalFields } = useLegalFields();
   const isReviewer = authUser ? hasMinRole(authUser.role, 'reviewer') : false;
 
   const isActive = (href: string) => {
@@ -121,16 +116,19 @@ export default function Sidebar() {
           Portal Bidang
         </p>
         <ul className="vector-sidebar-list">
-          {legalFields.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={`vector-sidebar-link ${pathname === '/cari' && isActive(item.href) ? 'active' : ''}`}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
+          {legalFields.map((field) => {
+            const href = `/cari?bidang=${field.id}`;
+            return (
+              <li key={field.id}>
+                <Link
+                  href={href}
+                  className={`vector-sidebar-link ${pathname === '/cari' && isActive(href) ? 'active' : ''}`}
+                >
+                  {field.label.replace('Hukum Administrasi & Tata Negara', 'Tata Negara').replace('Hukum Internasional & HAM', 'Internasional').replace('Maksim Lain-Lain & Filosofis', 'Lain-Lain')}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </div>
 

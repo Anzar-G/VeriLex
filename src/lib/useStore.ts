@@ -85,7 +85,7 @@ interface VeriLexState {
 export const useVeriLexStore = create<VeriLexState>()(
   persist(
     (set, get) => ({
-      favorites: ['lex-posterior', 'nullum-crimen'],
+      favorites: [],
       toggleFavorite: (id: string) =>
         set((state) => {
           const exists = state.favorites.includes(id);
@@ -140,19 +140,14 @@ export const useVeriLexStore = create<VeriLexState>()(
         })),
 
       // Quiz
-      quizScores: [80], // Initial mock score
+      quizScores: [],
       addQuizScore: (scorePercentage: number) =>
         set((state) => ({
           quizScores: [...state.quizScores, scorePercentage],
         })),
 
       // Flashcards
-      flashcardLevels: {
-        'lex-posterior': 5,
-        'lex-specialis': 4,
-        'nullum-crimen': 5,
-        'pacta-sunt-servanda': 3,
-      },
+      flashcardLevels: {},
       setFlashcardLevel: (id: string, level: number) =>
         set((state) => ({
           flashcardLevels: { ...state.flashcardLevels, [id]: level },

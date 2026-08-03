@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal, X, ChevronDown, Star, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { legalFields } from '@/data/mockData';
+import { useLegalFields } from '@/hooks/useLegalFields';
 import type { LegalField } from '@/types';
 import { useVeriLexStore } from '@/lib/useStore';
 
@@ -249,6 +249,7 @@ function AlphaBar({ onSelect, active }: { onSelect: (l: string) => void; active:
 function SearchContent() {
   const searchParams = useSearchParams();
   const { favorites, toggleFavorite } = useVeriLexStore();
+  const { fields: legalFields } = useLegalFields();
 
   const urlQuery  = searchParams.get('q')      || '';
   const urlBidang = searchParams.get('bidang') || '';
