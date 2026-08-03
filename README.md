@@ -89,7 +89,7 @@ VeriLex mengelompokkan maksim hukum Latin ke dalam beberapa bidang:
 
 VeriLex dapat diakses secara online melalui:
 
-**Website**: [https://verilex.vercel.app](https://verilex.vercel.app)
+**Website**: [VeriLex](https://veri-lex-demo.vercel.app/)
 
 Platform ini dapat diakses dari berbagai perangkat (desktop, tablet, mobile) dan tidak memerlukan instalasi tambahan.
 
