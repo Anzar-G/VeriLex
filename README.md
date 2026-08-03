@@ -42,111 +42,62 @@ VeriLex ditujukan untuk mahasiswa hukum, praktisi hukum, dan akademisi yang memb
 - **Dashboard Personal**: Dashboard untuk melihat progres belajar dan aktivitas
 - **Mode Reviewer**: Mode kontribusi untuk reviewer yang memverifikasi konten
 
-## Teknologi yang Digunakan
+## Cara Menggunakan VeriLex
 
-### Frontend
-- **Framework**: Next.js 16.2 (App Router)
-- **Bahasa**: TypeScript 5.0
-- **Styling**: TailwindCSS 4.0
-- **State Management**: Zustand 5.0
-- **Data Fetching**: TanStack React Query 5.101
-- **Animation**: Framer Motion 12.42
-- **Icons**: Lucide React 1.27
-- **Fonts**: Geist Sans & Geist Mono (Google Fonts)
+### Mencari Maksim Hukum
+1. Buka halaman pencarian atau gunakan kolom pencarian di header
+2. Ketik kata kunci (nama maksim, terjemahan, atau bidang hukum)
+3. Filter hasil berdasarkan kategori hukum yang relevan
+4. Klik pada maksim untuk melihat detail lengkap
 
-### Backend & Database
-- **Database**: PostgreSQL via Supabase
-- **Authentication**: Supabase Auth
-- **API**: Next.js API Routes
+### Mempelajari dengan Flashcard
+1. Akses menu Flashcard dari navigasi
+2. Pilih kategori maksim yang ingin dipelajari
+3. Gunakan kartu flash untuk menghafal maksim
+4. Sistem akan mengulang maksim yang sulit diingat dengan algoritma Spaced Repetition
 
-### Development Tools
-- **Package Manager**: npm
-- **Linting**: ESLint 9
-- **Type Checking**: TypeScript Compiler
+### Menguji Pengetahuan dengan Kuis
+1. Buka menu Quiz dari navigasi
+2. Pilih kategori atau mode kuis yang diinginkan
+3. Jawab pertanyaan untuk menguji pemahaman
+4. Lihat skor dan review jawaban yang salah
 
-## Instalasi & Pengaturan Lokal
+### Menyimpan Favorit
+1. Login atau daftar akun terlebih dahulu
+2. Buka halaman detail maksim
+3. Klik ikon favorit untuk menyimpan ke daftar favorit
+4. Akses daftar favorit dari menu profil
 
-### Prasyarat
-- Node.js 20.x atau lebih tinggi
-- npm atau yarn
-- Akun Supabase (untuk environment variables)
+### Dashboard Pengguna
+Setelah login, Anda dapat mengakses dashboard untuk:
+- Melihat progres belajar
+- Mengelola daftar favorit
+- Melihat riwayat aktivitas
+- Mengatur profil pengguna
 
-### Langkah-langkah Instalasi
+## Kategori Maksim Hukum
 
-1. **Clone repository**
-   ```bash
-   git clone https://github.com/Anzar-G/VeriLex.git
-   cd VeriLex
-   ```
+VeriLex mengelompokkan maksim hukum Latin ke dalam beberapa bidang:
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+- **Hukum Pidana**: Maksim terkait asas-asas hukum pidana
+- **Hukum Perdata**: Maksim yang digunakan dalam hukum perdata dan kontrak
+- **Hukum Tata Negara**: Maksim konstitusional dan tata negara
+- **Hukum Internasional**: Maksim dalam hukum internasional
+- **Hukum Administrasi**: Maksim dalam hukum administrasi negara
 
-3. **Setup environment variables**
-   
-   Buat file `.env.local` di root directory dan tambahkan:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
+## Akses Platform
 
-4. **Jalankan development server**
-   ```bash
-   npm run dev
-   ```
+VeriLex dapat diakses secara online melalui:
 
-5. **Akses aplikasi**
-   
-   Buka browser dan kunjungi `http://localhost:3000`
+**Website**: [https://verilex.vercel.app](https://verilex.vercel.app)
 
-## 📁 Struktur Project
+Platform ini dapat diakses dari berbagai perangkat (desktop, tablet, mobile) dan tidak memerlukan instalasi tambahan.
 
-```
-VeriLex/
-├── src/
-│   ├── app/              # Next.js App Router pages
-│   │   ├── admin/        # Halaman admin
-│   │   ├── api/          # API routes
-│   │   ├── cari/         # Halaman pencarian
-│   │   ├── dashboard/    # Dashboard pengguna
-│   │   ├── flashcard/    # Halaman flashcard
-│   │   ├── maksim/       # Halaman detail maksim
-│   │   ├── quiz/         # Halaman kuis
-│   │   └── ...
-│   ├── components/       # Reusable components
-│   │   ├── auth/         # Authentication components
-│   │   ├── layout/       # Layout components
-│   │   ├── ui/           # UI components
-│   │   └── ...
-│   ├── data/             # Static data
-│   ├── hooks/            # Custom React hooks
-│   ├── lib/              # Utility functions & configurations
-│   └── types/            # TypeScript type definitions
-├── public/               # Static assets
-├── supabase/             # Supabase migrations & functions
-├── design-system/        # Design tokens & guidelines
-└── package.json
-```
+## Tim VeriLex
 
-## Deployment
-
-Aplikasi ini di-deploy ke Vercel. Untuk deployment:
-
-1. **Push ke GitHub**
-   ```bash
-   git add .
-   git commit -m "commit message"
-   git push origin main
-   ```
-
-2. **Connect ke Vercel**
-   - Import repository dari GitHub ke Vercel
-   - Setup environment variables di Vercel dashboard
-   - Deploy otomatis akan terjadi
-
-**Live Demo**: [https://verilex.vercel.app](https://verilex.vercel.app)
+- **Development**: VeriLex Development Team
+- **Editorial**: VeriLex Editorial Team
+- **Review**: Legal Reviewers
 
 ## Kontribusi
 
@@ -170,7 +121,7 @@ Proyek ini bersifat proprietary dan ditujukan untuk penggunaan internal dan refe
 
 ## Kontak
 
-Untuk pertanyaan atau dukungan, silakan hubungi tim VeriLex melalui:
+Untuk pertanyaan, saran, atau dukungan, silakan hubungi tim VeriLex melalui:
 - Email: support@verilex.id
 - Website: [https://verilex.vercel.app](https://verilex.vercel.app)
 
