@@ -122,8 +122,8 @@ Proyek ini bersifat proprietary dan ditujukan untuk penggunaan internal dan refe
 ## Kontak
 
 Untuk pertanyaan, saran, atau dukungan, silakan hubungi tim VeriLex melalui:
-- Email: support@verilex.id
-- Website: [https://verilex.vercel.app](https://verilex.vercel.app)
+- Email: admin.verilex@gmail.com
+- Website: [VeriLex](https://veri-lex-demo.vercel.app/)
 
 ---
 
