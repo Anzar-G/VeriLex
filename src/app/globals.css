@@ -27,6 +27,18 @@
   --foreground: #202122;
 }
 
+.search-result-skeleton {
+  height: 92px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #eaecf0 25%, #f8f9fa 50%, #eaecf0 75%);
+  background-size: 200% 100%;
+  animation: verilex-skeleton 1.25s ease-in-out infinite;
+}
+
+@keyframes verilex-skeleton {
+  to { background-position: -200% 0; }
+}
+
 @theme inline {
   --color-navy: var(--navy);
   --color-cream: var(--cream);

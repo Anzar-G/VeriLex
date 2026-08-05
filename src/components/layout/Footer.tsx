@@ -36,6 +36,8 @@ export default function Footer() {
               <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.8125rem', color: 'var(--navy)', marginBottom: '0.5rem' }}>Navigasi</p>
               {[
                 { label: 'Indeks Maksim', href: '/cari' },
+                { label: 'Indeks A–Z', href: '/indeks' },
+                { label: 'Kategori Hukum', href: '/kategori' },
                 { label: 'Favorit Saya', href: '/favorit' },
                 { label: 'Quiz Interaktif', href: '/quiz' },
                 { label: 'Flashcard SRA', href: '/flashcard' },

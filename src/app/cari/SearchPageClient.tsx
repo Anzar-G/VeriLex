@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useEffect, Suspense, memo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal, X, ChevronDown, Star, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -13,11 +13,8 @@ type SearchMaxim = {
   id: string;
   latinPhrase: string;
   indonesianMeaning: string;
-  literalTranslation: string;
-  pronunciationGuide: string;
-  legalFields: LegalField[];
-  legalMeaning: string;
-  updatedAt: string;
+  status: string;
+  difficulty: string;
 };
 
 const fieldLabels: Record<string, string> = {
@@ -63,13 +60,12 @@ const fieldColors: Record<string, { bg: string; border: string; text: string; ic
 };
 
 // ── MaximCard inline (compact for grid view) ──────────────────────────────
-function MaximGridCard({ maxim, isFav, onToggleFav }: {
+const MaximGridCard = memo(function MaximGridCard({ maxim, isFav, onToggleFav }: {
   maxim: SearchMaxim;
   isFav: boolean;
   onToggleFav: () => void;
 }) {
-  const primaryField = maxim.legalFields[0];
-  const c = fieldColors[primaryField] || fieldColors['umum'];
+  const c = fieldColors.umum;
 
   return (
     <article style={{
@@ -95,7 +91,7 @@ function MaximGridCard({ maxim, isFav, onToggleFav }: {
           backgroundColor: c.bg, border: `1px solid ${c.border}`, color: c.text,
           borderRadius: '2px', display: 'inline-block', marginBottom: '0.5rem',
         }}>
-          {fieldShortLabels[primaryField] || primaryField}
+          {maxim.difficulty === 'lanjutan' ? 'Lanjutan' : maxim.difficulty === 'menengah' ? 'Menengah' : 'Dasar'}
         </span>
 
         {/* Latin phrase */}
@@ -146,16 +142,15 @@ function MaximGridCard({ maxim, isFav, onToggleFav }: {
       </div>
     </article>
   );
-}
+});
 
 // ── MaximCard for list view ────────────────────────────────────────────────
-function MaximListCard({ maxim, isFav, onToggleFav }: {
+const MaximListCard = memo(function MaximListCard({ maxim, isFav, onToggleFav }: {
   maxim: SearchMaxim;
   isFav: boolean;
   onToggleFav: () => void;
 }) {
-  const primaryField = maxim.legalFields[0];
-  const c = fieldColors[primaryField] || fieldColors['umum'];
+  const c = fieldColors.umum;
 
   return (
     <article style={{
@@ -174,31 +169,15 @@ function MaximListCard({ maxim, isFav, onToggleFav }: {
           <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', color: 'var(--navy)', lineHeight: 1.3 }}>
             {maxim.latinPhrase}
           </span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', color: '#72777D', whiteSpace: 'nowrap' }}>
-            {maxim.pronunciationGuide}
-          </span>
         </div>
         <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.875rem', color: '#54595D', lineHeight: 1.55, margin: '0 0 0.375rem', fontStyle: 'italic' }}>
           &ldquo;{maxim.indonesianMeaning}&rdquo;
         </p>
-        <p style={{
-          fontFamily: 'var(--font-body)', fontSize: '0.8125rem', color: '#72777D',
-          lineHeight: 1.5, margin: '0 0 0.5rem',
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-        }}>
-          {maxim.legalMeaning.split('\n\n')[0]?.substring(0, 180)}...
-        </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', flexWrap: 'wrap' }}>
-          {maxim.legalFields.map(field => (
-            <span key={field} style={{
-              fontSize: '0.6875rem', fontWeight: 600, color: fieldColors[field]?.text || 'var(--navy)',
-              backgroundColor: fieldColors[field]?.bg || '#F8F9FA',
-              border: `1px solid ${fieldColors[field]?.border || '#EAECF0'}`,
-              padding: '0.125rem 0.5rem', borderRadius: '2px',
-            }}>
-              {fieldLabels[field] || field}
-            </span>
-          ))}
+          <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: c.text, backgroundColor: c.bg, border: `1px solid ${c.border}`, padding: '0.125rem 0.5rem', borderRadius: '2px' }}>
+            {maxim.difficulty === 'lanjutan' ? 'Lanjutan' : maxim.difficulty === 'menengah' ? 'Menengah' : 'Dasar'}
+          </span>
+          <span style={{ fontSize: '0.6875rem', color: '#54595D' }}>{maxim.status}</span>
           <span style={{ marginLeft: 'auto', color: '#0645AD', fontSize: '0.8125rem', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
             Baca <ArrowRight size={12} />
           </span>
@@ -218,7 +197,7 @@ function MaximListCard({ maxim, isFav, onToggleFav }: {
       </button>
     </article>
   );
-}
+});
 
 // ── Alphabetical index bar ─────────────────────────────────────────────────
 function AlphaBar({ onSelect, active }: { onSelect: (l: string) => void; active: string }) {
@@ -265,23 +244,31 @@ function SearchContent() {
   const [viewMode,        setViewMode]        = useState<'grid' | 'list'>('list');
   const [alphaFilter,     setAlphaFilter]     = useState('');
   const [remoteMaxims,    setRemoteMaxims]    = useState<SearchMaxim[]>([]);
+  const [totalResults,    setTotalResults]    = useState(0);
+  const [isLoading,       setIsLoading]       = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    const params = new URLSearchParams({ limit: '100' });
+    const params = new URLSearchParams({
+      limit: '30',
+      offset: String((currentPage - 1) * 30),
+      select: 'id,latin_phrase,indonesian_meaning,status,difficulty',
+    });
     if (query) params.set('q', query);
     if (selectedFields.length) params.set('fields', selectedFields.join(','));
     if (sortBy === 'abjad') params.set('sort', 'alpha');
+    if (alphaFilter) params.set('initial', alphaFilter);
+    queueMicrotask(() => { if (!cancelled) setIsLoading(true); });
     void fetch(`/api/maxims?${params}`).then(response => response.json()).then(payload => {
       if (cancelled) return;
       setRemoteMaxims((payload.data ?? []).map((row: Record<string, unknown>) => ({
         id: row.id, latinPhrase: row.latin_phrase, indonesianMeaning: row.indonesian_meaning,
-        literalTranslation: row.literal_translation, pronunciationGuide: row.pronunciation_guide,
-        legalFields: row.legal_fields, legalMeaning: row.legal_meaning, updatedAt: row.updated_at,
+        status: row.status, difficulty: row.difficulty,
       })));
-    });
+      setTotalResults(payload.total ?? 0);
+    }).catch(() => { if (!cancelled) { setRemoteMaxims([]); setTotalResults(0); } }).finally(() => { if (!cancelled) setIsLoading(false); });
     return () => { cancelled = true; };
-  }, [query, selectedFields, sortBy]);
+  }, [query, selectedFields, sortBy, currentPage, alphaFilter]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -297,19 +284,7 @@ function SearchContent() {
     setAlphaFilter('');
   }
 
-  // Derive results
-  let results = remoteMaxims;
-
-  // Apply alpha filter on top
-  if (alphaFilter) {
-    results = results.filter(m => m.latinPhrase.toUpperCase().startsWith(alphaFilter));
-  }
-
-  if (sortBy === 'abjad') {
-    results = [...results].sort((a, b) => a.latinPhrase.localeCompare(b.latinPhrase));
-  } else if (sortBy === 'terbaru') {
-    results = [...results].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-  }
+  const results = remoteMaxims;
 
   // Reset pagination on filter change
   const [prevQuery,  setPrevQuery]  = useState(query);
@@ -322,9 +297,8 @@ function SearchContent() {
     setCurrentPage(1);
   }
 
-  const ITEMS_PER_PAGE = viewMode === 'grid' ? 12 : 10;
-  const totalPages       = Math.ceil(results.length / ITEMS_PER_PAGE);
-  const paginatedResults = results.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(totalResults / 30));
+  const paginatedResults = results;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -432,7 +406,7 @@ function SearchContent() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.875rem', flexWrap: 'wrap' }}>
             <div className="vector-tabs-group" style={{ marginBottom: 0 }}>
               <span className="vector-tab-item active">Semua Maksim</span>
-              <span className="vector-tab-item disabled">Indeks A–Z</span>
+              <Link href="/indeks" className="vector-tab-item">Indeks A–Z</Link>
             </div>
           </div>
 
@@ -545,16 +519,16 @@ function SearchContent() {
                   Maksim diawali huruf{' '}
                   <strong style={{ fontFamily: 'var(--font-display)', color: 'var(--navy)', fontSize: '1rem' }}>{alphaFilter}</strong>
                   {' '}—{' '}
-                  <strong style={{ color: 'var(--navy)' }}>{results.length}</strong> entri
+                  <strong style={{ color: 'var(--navy)' }}>{totalResults}</strong> entri
                 </>
               ) : isSingleLetter && query ? (
                 <>
                   Huruf <strong style={{ fontFamily: 'var(--font-display)', color: 'var(--navy)' }}>{query.toUpperCase()}</strong>
-                  {' '}— <strong style={{ color: 'var(--navy)' }}>{results.length}</strong> entri
+                  {' '}— <strong style={{ color: 'var(--navy)' }}>{totalResults}</strong> entri
                 </>
               ) : (
                 <>
-                  <strong style={{ color: 'var(--navy)' }}>{results.length}</strong> hasil
+                  <strong style={{ color: 'var(--navy)' }}>{totalResults}</strong> hasil
                   {query && <> untuk &ldquo;<strong style={{ color: 'var(--navy)' }}>{query}</strong>&rdquo;</>}
                   {selectedFields.length > 0 && <> · filter aktif</>}
                 </>
@@ -577,7 +551,11 @@ function SearchContent() {
           </div>
 
           {/* Results */}
-          {results.length > 0 ? (
+          {isLoading ? (
+            <div aria-label="Memuat hasil" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {Array.from({ length: 8 }, (_, index) => <div key={index} className="search-result-skeleton" />)}
+            </div>
+          ) : results.length > 0 ? (
             <>
               {viewMode === 'grid' ? (
                 <div style={{
