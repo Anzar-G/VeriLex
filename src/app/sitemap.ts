@@ -5,7 +5,7 @@ import { siteUrl } from '@/lib/site';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createServerClient();
   const { data } = await supabase.from('maxims').select('id, updated_at').eq('is_active', true);
-  const staticPages = ['', '/cari', '/indeks', '/kategori', '/tentang', '/faq', '/panduan'].map(path => ({
+  const staticPages = ['', '/cari', '/indeks', '/kategori', '/tentang', '/faq', '/panduan', '/penyangkalan'].map(path => ({
     url: `${siteUrl}${path || '/'}`, lastModified: new Date(), changeFrequency: path ? 'weekly' as const : 'daily' as const, priority: path ? 0.7 : 1,
   }));
   const articles = (data ?? []).map(maxim => ({

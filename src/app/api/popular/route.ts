@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { createServerClient } from '@/lib/supabase-server';
 
 export const revalidate = 1800; // 30 minutes
 
 export async function GET(request: Request) {
+  const supabase = createServerClient();
   const { searchParams } = new URL(request.url);
   const limit  = Math.min(parseInt(searchParams.get('limit') ?? '5'), 20);
   const days   = Math.min(parseInt(searchParams.get('days')  ?? '7'), 30);

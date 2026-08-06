@@ -14,6 +14,7 @@ export default function FlashcardClient() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionStats, setSessionStats] = useState({ known: 0, learning: 0 });
+  const [fetchLoading, setFetchLoading] = useState(false);
   const { flashcardLevels, setFlashcardLevel, authUser } = useVeriLexStore();
   
   // Settings
@@ -26,17 +27,36 @@ export default function FlashcardClient() {
     });
   }, [authUser, setFlashcardLevel]);
 
+  const fetchCards = async (showLoading = true) => {
+    if (showLoading) setFetchLoading(true);
+    try {
+      // Fetch a small batch — 20 cards with random offset for variety
+      const countRes = await fetch('/api/maxims?limit=1');
+      const countData = await countRes.json().catch(() => ({ total: 100 }));
+      const total = countData.total ?? 100;
+      const maxOffset = Math.max(0, total - 20);
+      const randomOffset = Math.floor(Math.random() * maxOffset);
+
+      const response = await fetch(`/api/maxims?limit=20&offset=${randomOffset}`);
+      const payload = await response.json().catch(() => ({ data: [] }));
+      const fetched = (payload.data ?? []).map((row: Record<string, unknown>) => ({
+        id: row.id, latinPhrase: row.latin_phrase, indonesianMeaning: row.indonesian_meaning,
+        literalTranslation: row.literal_translation, pronunciationGuide: row.pronunciation_guide,
+        legalFields: row.legal_fields, legalMeaning: row.legal_meaning, history: row.history,
+        wordByWord: (row.data as Record<string, unknown>)?.wordByWord ?? [], relations: [], caseExamples: [],
+        isActive: row.is_active, createdAt: row.created_at, updatedAt: row.updated_at,
+      })) as Maxim[];
+      return fetched.sort(() => Math.random() - 0.5);
+    } catch {
+      return [];
+    } finally {
+      if (showLoading) setFetchLoading(false);
+    }
+  };
+
   const startSession = async () => {
-    const response = await fetch('/api/maxims?limit=100');
-    const payload = await response.json().catch(() => ({ data: [] }));
-    const fetched = (payload.data ?? []).map((row: Record<string, unknown>) => ({
-      id: row.id, latinPhrase: row.latin_phrase, indonesianMeaning: row.indonesian_meaning,
-      literalTranslation: row.literal_translation, pronunciationGuide: row.pronunciation_guide,
-      legalFields: row.legal_fields, legalMeaning: row.legal_meaning, history: row.history,
-      wordByWord: (row.data as Record<string, unknown>)?.wordByWord ?? [], relations: [], caseExamples: [],
-      isActive: row.is_active, createdAt: row.created_at, updatedAt: row.updated_at,
-    })) as Maxim[];
-    setCards(fetched.sort(() => Math.random() - 0.5).slice(0, 20));
+    const fetched = await fetchCards();
+    setCards(fetched);
     setStarted(true);
     setCurrentIndex(0);
     setIsFlipped(false);
@@ -108,8 +128,15 @@ export default function FlashcardClient() {
             </div>
           </div>
 
-          <button onClick={startSession} className="btn-primary" style={{ padding: '0.75rem 2.5rem', fontSize: '0.9375rem', width: '100%', justifyContent: 'center' }}>
-            <Play size={16} fill="currentColor" style={{ marginRight: '0.25rem' }} /> Mulai Belajar (20 Kartu)
+          <button onClick={startSession} disabled={fetchLoading} className="btn-primary" style={{ padding: '0.75rem 2.5rem', fontSize: '0.9375rem', width: '100%', justifyContent: 'center', opacity: fetchLoading ? 0.7 : 1 }}>
+            {fetchLoading ? (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
+                Mengambil kartu…
+              </span>
+            ) : (
+              <><Play size={16} fill="currentColor" style={{ marginRight: '0.25rem' }} /> Mulai Belajar (20 Kartu)</>
+            )}
           </button>
         </div>
       </main>

@@ -70,7 +70,8 @@ export default function Footer() {
           </p>
           <div className="footer-bottom-links">
             <Link href="/tentang" className="wiki-link" style={{ fontSize: '0.75rem' }}>Tentang</Link>
-            <Link href="/faq" className="wiki-link" style={{ fontSize: '0.75rem' }}>Penyangkalan</Link>
+            <Link href="/penyangkalan" className="wiki-link" style={{ fontSize: '0.75rem' }}>Penyangkalan</Link>
+            <Link href="/faq" className="wiki-link" style={{ fontSize: '0.75rem' }}>FAQ</Link>
             <Link href="/panduan" className="wiki-link" style={{ fontSize: '0.75rem' }}>Panduan</Link>
           </div>
         </div>

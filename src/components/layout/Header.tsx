@@ -137,7 +137,7 @@ export default function Header() {
             </div>
           )}
 
-          <Link href="/faq"     className="wiki-link" style={{ color: '#0645AD' }}>Pembicaraan</Link>
+          <Link href="/faq"     className="wiki-link" style={{ color: '#0645AD' }}>FAQ</Link>
           <Link href="/favorit" className="wiki-link" style={{ color: '#0645AD', fontWeight: 600 }}>
             Favorit ({favorites.length})
           </Link>
@@ -175,12 +175,16 @@ export default function Header() {
           {[
             { href: '/', label: 'Halaman Utama' },
             { href: '/cari', label: 'Jelajahi Indeks Maksim' },
+            { href: '/indeks', label: 'Indeks A–Z' },
+            { href: '/kategori', label: 'Kategori Hukum' },
             { href: '/favorit', label: `Favorit Saya (${favorites.length})` },
             { href: '/quiz', label: 'Quiz Interaktif' },
             { href: '/flashcard', label: 'Flashcard SRA' },
             { href: '/dashboard', label: 'Dashboard Progres' },
             { href: '/panduan', label: 'Panduan Penggunaan' },
-            { href: '/faq', label: 'FAQ & Penyangkalan' },
+            { href: '/faq', label: 'FAQ' },
+            { href: '/penyangkalan', label: 'Penyangkalan' },
+            { href: '/tentang', label: 'Tentang VeriLex' },
           ].map(item => (
             <Link key={item.href} href={item.href}
               style={{ display: 'block', padding: '0.625rem 1.25rem', color: '#0645AD', fontFamily: 'var(--font-body)', fontSize: '0.8125rem', textDecoration: 'none', borderBottom: '1px solid #EAECF0' }}

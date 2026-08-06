@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Trophy, ArrowRight, HelpCircle, GraduationCap } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Trophy, ArrowRight, GraduationCap, BookMarked, AlertCircle } from 'lucide-react';
 import type { QuizQuestion } from '@/types';
 import { useVeriLexStore } from '@/lib/useStore';
 import { apiFetch } from '@/lib/api-fetch';
 
 export default function QuizClient() {
   const [started, setStarted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [emptyBank, setEmptyBank] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -19,22 +21,33 @@ export default function QuizClient() {
   const { addQuizScore } = useVeriLexStore();
 
   const startQuiz = async () => {
-    const response = await apiFetch('/api/quiz?limit=5');
-    const payload = await response.json().catch(() => ({ data: [] }));
-    const dynamicQuestions = (payload.data ?? []).map((row: Record<string, unknown>) => ({
-      id: row.id, maximId: row.maxim_id ?? '', question: row.prompt, options: row.options,
-      correctIndex: row.correct_option_index, explanation: row.explanation ?? '', legalField: 'umum',
-      difficulty: row.difficulty === 'lanjutan' ? 'sulit' : row.difficulty === 'menengah' ? 'sedang' : 'mudah',
-    })) as QuizQuestion[];
-    if (!dynamicQuestions.length) return;
-    setQuestions(dynamicQuestions);
-    setStarted(true);
-    setCurrentQuestionIndex(0);
-    setSelectedOption(null);
-    setIsAnswered(false);
-    setScore(0);
-    setAnswers([]);
-    setShowResults(false);
+    setLoading(true);
+    setEmptyBank(false);
+    try {
+      const response = await apiFetch('/api/quiz?limit=5');
+      const payload = await response.json().catch(() => ({ data: [] }));
+      const dynamicQuestions = (payload.data ?? []).map((row: Record<string, unknown>) => ({
+        id: row.id, maximId: row.maxim_id ?? '', question: row.prompt, options: row.options,
+        correctIndex: row.correct_option_index, explanation: row.explanation ?? '', legalField: 'umum',
+        difficulty: row.difficulty === 'lanjutan' ? 'sulit' : row.difficulty === 'menengah' ? 'sedang' : 'mudah',
+      })) as QuizQuestion[];
+
+      if (!dynamicQuestions.length) {
+        // P0-3: tampilkan empty state, bukan diam-diam return
+        setEmptyBank(true);
+        return;
+      }
+      setQuestions(dynamicQuestions);
+      setStarted(true);
+      setCurrentQuestionIndex(0);
+      setSelectedOption(null);
+      setIsAnswered(false);
+      setScore(0);
+      setAnswers([]);
+      setShowResults(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelectOption = (index: number) => {
@@ -70,47 +83,82 @@ export default function QuizClient() {
   if (!started) {
     return (
       <main style={{ minHeight: 'calc(100vh - 60px)', padding: '3rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8F9FA' }}>
-        <div 
-          style={{ 
-            maxWidth: '600px', 
-            width: '100%', 
-            backgroundColor: '#FFFFFF', 
-            padding: '2.5rem 2rem', 
-            borderRadius: '4px', 
-            border: '1px solid #A2A9B1', 
-            textAlign: 'center', 
+        <div
+          style={{
+            maxWidth: '600px',
+            width: '100%',
+            backgroundColor: '#FFFFFF',
+            padding: '2.5rem 2rem',
+            borderRadius: '4px',
+            border: '1px solid #A2A9B1',
+            textAlign: 'center',
             boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}
         >
-          {/* Subtle top decoration bar */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', backgroundColor: 'var(--navy)' }} />
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', backgroundColor: emptyBank ? '#D4A574' : 'var(--navy)' }} />
 
-          <div style={{ display: 'inline-flex', padding: '1rem', backgroundColor: 'rgba(15, 27, 60, 0.05)', borderRadius: '50%', marginBottom: '1.5rem' }}>
-            <GraduationCap size={44} color="var(--navy)" />
-          </div>
-          
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.875rem', color: 'var(--navy)', marginBottom: '0.75rem', border: 'none', padding: 0 }}>
-            Uji Kompetensi Maksim Hukum
-          </h1>
-          
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', color: 'var(--steel-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>
-            Uji pemahaman akademis Anda mengenai asas-asas hukum Latin paling krusial yang berlaku di Indonesia. 
-            Setiap sesi berisi <strong>5 pertanyaan acak</strong> dengan pembahasan mendalam.
-          </p>
+          {/* ── Empty bank state (P0-3) ── */}
+          {emptyBank ? (
+            <>
+              <div style={{ display: 'inline-flex', padding: '1rem', backgroundColor: 'rgba(212,165,116,0.1)', borderRadius: '50%', marginBottom: '1.5rem' }}>
+                <AlertCircle size={44} color="#D4A574" />
+              </div>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.5rem', color: 'var(--navy)', marginBottom: '0.75rem', border: 'none', padding: 0 }}>
+                Soal Kuis Belum Tersedia
+              </h1>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', color: 'var(--steel-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>
+                Bank soal untuk kuis ini sedang dalam proses penyusunan oleh tim editorial VeriLex.
+                Coba lagi nanti atau pelajari maksim hukum melalui modul lain.
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Link href="/flashcard" className="btn-primary" style={{ fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}>
+                  <BookMarked size={15} /> Coba Flashcard SRA
+                </Link>
+                <Link href="/cari" className="btn-secondary" style={{ fontSize: '0.875rem' }}>
+                  Jelajahi Maksim
+                </Link>
+              </div>
+            </>
+          ) : (
+            /* ── Normal start screen ── */
+            <>
+              <div style={{ display: 'inline-flex', padding: '1rem', backgroundColor: 'rgba(15, 27, 60, 0.05)', borderRadius: '50%', marginBottom: '1.5rem' }}>
+                <GraduationCap size={44} color="var(--navy)" />
+              </div>
 
-          {/* Interactive Info Box */}
-          <div style={{ backgroundColor: '#FAF8F3', border: '1px solid #D4A574', padding: '1rem', borderRadius: '2px', textAlign: 'left', marginBottom: '2rem', fontSize: '0.8125rem', color: '#54595D', lineHeight: 1.5 }}>
-            <strong style={{ color: 'var(--navy)', display: 'block', marginBottom: '0.25rem' }}>Aturan Kuis:</strong>
-            - Pilihan ganda dengan 4 opsi jawaban.<br />
-            - Pembahasan artikel lengkap muncul langsung setelah Anda menjawab setiap soal.<br />
-            - Tidak ada batasan waktu, bacalah soal dengan teliti.
-          </div>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.875rem', color: 'var(--navy)', marginBottom: '0.75rem', border: 'none', padding: 0 }}>
+                Uji Kompetensi Maksim Hukum
+              </h1>
 
-          <button onClick={startQuiz} className="btn-primary" style={{ padding: '0.75rem 2.5rem', fontSize: '0.9375rem', width: '100%', justifyContent: 'center' }}>
-            Mulai Kuis Sekarang
-          </button>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', color: 'var(--steel-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>
+                Uji pemahaman akademis Anda mengenai asas-asas hukum Latin paling krusial yang berlaku di Indonesia.
+                Setiap sesi berisi <strong>5 pertanyaan acak</strong> dengan pembahasan mendalam.
+              </p>
+
+              <div style={{ backgroundColor: '#FAF8F3', border: '1px solid #D4A574', padding: '1rem', borderRadius: '2px', textAlign: 'left', marginBottom: '2rem', fontSize: '0.8125rem', color: '#54595D', lineHeight: 1.5 }}>
+                <strong style={{ color: 'var(--navy)', display: 'block', marginBottom: '0.25rem' }}>Aturan Kuis:</strong>
+                - Pilihan ganda dengan 4 opsi jawaban.<br />
+                - Pembahasan artikel lengkap muncul langsung setelah Anda menjawab setiap soal.<br />
+                - Tidak ada batasan waktu, bacalah soal dengan teliti.
+              </div>
+
+              <button
+                onClick={startQuiz}
+                disabled={loading}
+                className="btn-primary"
+                style={{ padding: '0.75rem 2.5rem', fontSize: '0.9375rem', width: '100%', justifyContent: 'center', opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+              >
+                {loading ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
+                    Memuat soal...
+                  </span>
+                ) : 'Mulai Kuis Sekarang'}
+              </button>
+            </>
+          )}
         </div>
       </main>
     );

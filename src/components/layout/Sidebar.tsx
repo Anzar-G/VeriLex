@@ -8,6 +8,8 @@ import { useLegalFields } from '@/hooks/useLegalFields';
 const mainNavigation = [
   { label: 'Halaman Utama', href: '/' },
   { label: 'Semua Maksim', href: '/cari' },
+  { label: 'Indeks A–Z', href: '/indeks' },
+  { label: 'Kategori Hukum', href: '/kategori' },
   { label: 'Quiz Interaktif', href: '/quiz' },
   { label: 'Flashcard SRA', href: '/flashcard' },
   { label: 'Dashboard Progres', href: '/dashboard' },
@@ -16,8 +18,16 @@ const mainNavigation = [
 const helpItems = [
   { label: 'Panduan Penggunaan', href: '/panduan' },
   { label: 'Pertanyaan Umum (FAQ)', href: '/faq' },
+  { label: 'Penyangkalan', href: '/penyangkalan' },
   { label: 'Tentang VeriLex', href: '/tentang' },
 ];
+
+const workspaceLinks: Record<string, { label: string; href: string }> = {
+  contributor:    { label: 'Workspace Kontributor', href: '/workspace/kontributor' },
+  editor:         { label: 'Workspace Editor', href: '/workspace/editor' },
+  senior_editor:  { label: 'Workspace Senior Editor', href: '/workspace/senior-editor' },
+  subject_expert: { label: 'Workspace Pakar', href: '/workspace/pakar' },
+};
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -77,6 +87,17 @@ export default function Sidebar() {
               Favorit Saya ({favorites.length})
             </Link>
           </li>
+          {authUser && workspaceLinks[authUser.role] && (
+            <li>
+              <Link
+                href={workspaceLinks[authUser.role].href}
+                className={`vector-sidebar-link ${pathname.startsWith(workspaceLinks[authUser.role].href) ? 'active' : ''}`}
+                style={{ color: '#065F46', fontWeight: 600 }}
+              >
+                {workspaceLinks[authUser.role].label}
+              </Link>
+            </li>
+          )}
           {isReviewer && (
             <li>
               <Link

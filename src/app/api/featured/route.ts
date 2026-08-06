@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { createServerClient } from '@/lib/supabase-server';
 
 export const revalidate = 3600; // revalidate every hour
 
 export async function GET() {
+  const supabase = createServerClient();
   const today = new Date().toISOString().split('T')[0];
 
   // 1. Cek jadwal hari ini
@@ -31,7 +27,6 @@ export async function GET() {
   }
 
   // 2. Fallback: ambil maxim aktif secara acak dengan konten paling lengkap
-  // (prioritaskan yang punya legal_meaning panjang)
   const { data: fallback } = await supabase
     .from('maxims')
     .select('*')
@@ -40,9 +35,8 @@ export async function GET() {
     .limit(10);
 
   if (fallback && fallback.length > 0) {
-    // Pilih yang punya legal_meaning terpanjang dari 10 terbaru
     const best = fallback.sort(
-      (a, b) => (b.legal_meaning?.length ?? 0) - (a.legal_meaning?.length ?? 0)
+      (a, b) => ((b.legal_meaning as string)?.length ?? 0) - ((a.legal_meaning as string)?.length ?? 0)
     )[0];
     return NextResponse.json(best);
   }

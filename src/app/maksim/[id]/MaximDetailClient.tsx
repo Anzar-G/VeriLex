@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Star, Volume2, Share2, RotateCcw, MessageSquare, Lock, Quote } from 'lucide-react';
+import { Volume2, Share2, RotateCcw, MessageSquare, Lock, Quote } from 'lucide-react';
 import type { Maxim } from '@/types';
 import Sidebar from '@/components/layout/Sidebar';
 import { useVeriLexStore, hasMinRole } from '@/lib/useStore';
+import { useToast } from '@/components/ui/ActionToast';
 import MaximEditor from '@/components/edit/MaximEditor';
 import RevisionHistory from '@/components/edit/RevisionHistory';
 import ReportButton from '@/components/report/ReportButton';
@@ -14,6 +15,8 @@ import SourceList from '@/components/maxim/SourceList';
 import { ArticleMetaBar } from '@/components/maxim/ArticleBadges';
 import CitationModal from '@/components/maxim/CitationModal';
 import DiscussionPanel from '@/components/maxim/DiscussionPanel';
+import ArticleTabBar from '@/components/maxim/ArticleTabBar';
+import ResponsiveTable from '@/components/maxim/ResponsiveTable';
 
 const fieldLabels: Record<string, string> = {
   'umum': 'Asas Umum & Penafsiran',
@@ -62,7 +65,7 @@ function SectionPlaceholder() {
 }
 
 export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
-  const { favorites, toggleFavorite, notes, setNote, editedMaxims, updateMaxim, resetMaxim, authUser } = useVeriLexStore();
+  const { favorites, toggleFavorite, notes, setNote, editedMaxims, resetMaxim, authUser } = useVeriLexStore();
   const isFav = favorites.includes(initialMaxim.id);
 
   // Role checks
@@ -79,7 +82,9 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
     });
   }, [initialMaxim.id]);
   const [tocExpanded, setTocExpanded] = useState(true);
-  const [activeTab, setActiveTab] = useState<'baca' | 'diskusi' | 'sunting' | 'riwayat'>('baca');
+  const [tocMobileExpanded, setTocMobileExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<'baca' | 'diskusi' | 'catatan' | 'sunting' | 'riwayat'>('baca');
+  const { showToast } = useToast();
 
   // ── State: live maxim (updated after a successful global save) ──────────
   const [liveMaxim, setLiveMaxim] = useState<Maxim>(initialMaxim);
@@ -100,22 +105,30 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
       const u = new SpeechSynthesisUtterance(maxim.latinPhrase);
       u.lang = 'it-IT'; u.rate = 0.85;
       u.onstart = () => setIsPlaying(true);
-      u.onend = () => setIsPlaying(false);
-      u.onerror = () => setIsPlaying(false);
+      u.onend   = () => { setIsPlaying(false); showToast('Pelafalan selesai diputar.', 'info'); };
+      u.onerror = () => { setIsPlaying(false); showToast('Browser tidak mendukung pelafalan audio.', 'warning'); };
       window.speechSynthesis.speak(u);
+    } else {
+      showToast('Fitur audio tidak tersedia di browser ini.', 'warning');
     }
   };
 
   const handleShare = () => {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href);
-      setCopied(true); setTimeout(() => setCopied(false), 2500);
+      navigator.clipboard.writeText(window.location.href)
+        .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); showToast('Tautan artikel disalin ke clipboard!', 'success'); })
+        .catch(() => showToast('Gagal menyalin tautan.', 'error'));
+    } else {
+      showToast('Browser tidak mendukung salin otomatis.', 'warning');
     }
   };
 
   const handleSaveNote = (e: React.FormEvent) => {
-    e.preventDefault(); setNote(maxim.id, noteText);
-    setNoteSaved(true); setTimeout(() => setNoteSaved(false), 2500);
+    e.preventDefault();
+    setNote(maxim.id, noteText);
+    setNoteSaved(true);
+    setTimeout(() => setNoteSaved(false), 2500);
+    showToast('Catatan pribadi berhasil disimpan.', 'success');
   };
 
   const handleResetEdit = () => {
@@ -189,19 +202,15 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
       <div className="wiki-main-content lg:border-l lg:border-[#A2A9B1] lg:pl-6">
 
         {/* ── Action Tabs ── */}
-        <div className="vector-tabs-container" suppressHydrationWarning>
-          <div className="vector-tabs-group" suppressHydrationWarning>
-            <button suppressHydrationWarning onClick={() => setActiveTab('baca')} className={`vector-tab-item vector-tab-btn ${activeTab === 'baca' || activeTab === 'sunting' ? 'active' : ''}`}>Halaman</button>
-            <button suppressHydrationWarning onClick={() => setActiveTab('diskusi')} className={`vector-tab-item vector-tab-btn ${activeTab === 'diskusi' ? 'active' : ''}`}>Diskusi & Catatan</button>
-          </div>
-          <div className="vector-tabs-group" suppressHydrationWarning>
-            <button suppressHydrationWarning onClick={() => setActiveTab('baca')} className={`vector-tab-item vector-tab-btn ${activeTab === 'baca' ? 'active' : ''}`}>Baca</button>
-            <button suppressHydrationWarning onClick={() => setActiveTab('sunting')} className={`vector-tab-item vector-tab-btn ${activeTab === 'sunting' ? 'active' : ''}`}>Sunting</button>            <span className="vector-tab-item disabled">Lihat riwayat</span>
-            <button suppressHydrationWarning onClick={() => setActiveTab('riwayat')} className={`vector-tab-item vector-tab-btn ${activeTab === 'riwayat' ? 'active' : ''}`}>Riwayat</button>            <button onClick={() => toggleFavorite(maxim.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 0.5rem', color: isFav ? 'var(--bronze)' : '#72777D' }} aria-label={isFav ? 'Hapus dari favorit' : 'Simpan ke favorit'}>
-              <Star size={14} fill={isFav ? 'var(--bronze)' : 'none'} />
-            </button>
-          </div>
-        </div>
+        <ArticleTabBar
+          activeTab={activeTab as 'baca' | 'diskusi' | 'sunting' | 'riwayat'}
+          isFav={isFav}
+          onTabChange={(tab) => setActiveTab(tab)}
+          onToggleFav={() => {
+            toggleFavorite(maxim.id);
+            showToast(isFav ? 'Dihapus dari favorit.' : 'Ditambahkan ke favorit!', isFav ? 'info' : 'success');
+          }}
+        />
 
         {saveNotice && (
           <div style={{ margin: '0.75rem 0', padding: '0.625rem 0.875rem', backgroundColor: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: '2px', fontSize: '0.8125rem', color: '#166534', lineHeight: 1.5 }}>
@@ -272,8 +281,15 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
 
             {/* ── Table of Contents (clear: both so it falls below infobox) ── */}
             <div style={{ clear: 'both' }} />
-            <div className={`wiki-toc${tocExpanded ? '' : ' toc-collapsed'}`}>
-              <div className="wiki-toc-title" onClick={() => setTocExpanded(p => !p)}>
+            <div className={`wiki-toc${tocExpanded ? '' : ' toc-collapsed'}${tocMobileExpanded ? ' toc-mobile-expanded' : ''}`}>
+              <div className="wiki-toc-title" onClick={() => {
+                // On mobile toggle toc-mobile-expanded class; on desktop toggle collapse
+                if (window.innerWidth < 768) {
+                  setTocMobileExpanded(p => !p);
+                } else {
+                  setTocExpanded(p => !p);
+                }
+              }}>
                 <span>Daftar isi</span>
                 <span style={{ fontSize: '0.7rem', color: '#0645AD', marginLeft: '0.5rem' }}>[{tocExpanded ? 'sembunyikan' : 'tampilkan'}]</span>
               </div>
@@ -312,45 +328,29 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
             {/* ═══════════════════════════════════════ */}
             <h2 id="etimologi" style={h2Style}>Makna Harfiah & Etimologi</h2>
             <WikiHR />
-            <div style={{ margin: '0.5rem 0 1rem', overflowX: 'auto' }}>
+            <div style={{ margin: '0.5rem 0 1rem' }}>
               {maxim.wordByWordExtended && maxim.wordByWordExtended.length > 0 ? (
-                <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.8125rem', minWidth: '300px' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#F8F9FA', borderBottom: '1px solid #A2A9B1' }}>
-                      <th style={tableHeader}>Kata</th>
-                      <th style={tableHeader}>Bentuk Latin</th>
-                      <th style={tableHeader}>Jenis</th>
-                      <th style={tableHeader}>Arti</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {maxim.wordByWordExtended.map((w, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #EAECF0' }}>
-                        <td style={{ ...tableCell, fontFamily: 'var(--font-display)', fontStyle: 'italic', fontWeight: 700, color: 'var(--navy)', whiteSpace: 'nowrap' }}>{w.word}</td>
-                        <td style={{ ...tableCell, fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#54595D' }}>{w.latinForm}</td>
-                        <td style={{ ...tableCell, color: '#54595D' }}>{w.partOfSpeech}</td>
-                        <td style={tableCell}>{w.meaning}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <ResponsiveTable
+                  caption="Analisis kata per kata"
+                  headers={['Kata', 'Bentuk Latin', 'Jenis Kata', 'Arti']}
+                  noWrapCols={[0, 1]}
+                  cellStyles={{
+                    0: { fontFamily: 'var(--font-display)', fontStyle: 'italic', fontWeight: 700, color: 'var(--navy)' },
+                    1: { fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#54595D' },
+                    2: { color: '#54595D' },
+                  }}
+                  rows={maxim.wordByWordExtended.map(w => [w.word, w.latinForm, w.partOfSpeech, w.meaning])}
+                />
               ) : (
-                <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.8125rem', minWidth: '220px' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#F8F9FA', borderBottom: '1px solid #A2A9B1' }}>
-                      <th style={tableHeader}>Kosakata Latin</th>
-                      <th style={tableHeader}>Arti Tekstual</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {maxim.wordByWord.map((w, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #EAECF0' }}>
-                        <td style={{ ...tableCell, fontFamily: 'var(--font-display)', fontStyle: 'italic', fontWeight: 700, color: 'var(--navy)', whiteSpace: 'nowrap' }}>{w.word}</td>
-                        <td style={tableCell}>{w.meaning}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <ResponsiveTable
+                  caption="Arti kata per kata"
+                  headers={['Kosakata Latin', 'Arti Tekstual']}
+                  noWrapCols={[0]}
+                  cellStyles={{
+                    0: { fontFamily: 'var(--font-display)', fontStyle: 'italic', fontWeight: 700, color: 'var(--navy)' },
+                  }}
+                  rows={maxim.wordByWord.map(w => [w.word, w.meaning])}
+                />
               )}
             </div>
             {maxim.etymologyNotes && (
@@ -504,26 +504,13 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
             <h2 id="dasar-hukum" style={h2Style}>Dasar Hukum Indonesia</h2>
             <WikiHR />
             {maxim.legalBasisTable && maxim.legalBasisTable.length > 0 ? (
-              <div style={{ margin: '0.5rem 0 1.25rem', overflowX: 'auto' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.8125rem' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#F8F9FA' }}>
-                      <th style={tableHeader}>Peraturan</th>
-                      <th style={tableHeader}>Pasal</th>
-                      <th style={tableHeader}>Relevansi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {maxim.legalBasisTable.map((row, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #EAECF0' }}>
-                        <td style={{ ...tableCell, fontWeight: 600, whiteSpace: 'nowrap' }}>{row.statute}</td>
-                        <td style={{ ...tableCell, whiteSpace: 'nowrap' }}>{row.article}</td>
-                        <td style={tableCell}>{row.relevance}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                <ResponsiveTable
+                  caption="Dasar hukum positif Indonesia"
+                  headers={['Peraturan', 'Pasal', 'Relevansi']}
+                  noWrapCols={[0, 1]}
+                  cellStyles={{ 0: { fontWeight: 600 } }}
+                  rows={maxim.legalBasisTable.map(row => [row.statute, row.article, row.relevance])}
+                />
             ) : maxim.indonesianLegalBasis ? (
               paragraphs(maxim.indonesianLegalBasis)
             ) : <SectionPlaceholder />}
@@ -595,28 +582,22 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
             <h2 id="internasional" style={h2Style}>Perbandingan Internasional</h2>
             <WikiHR />
             {maxim.internationalComparisons && maxim.internationalComparisons.length > 0 ? (
-              <div style={{ margin: '0.5rem 0 1.25rem', overflowX: 'auto' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.8125rem' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#F8F9FA' }}>
-                      <th style={tableHeader}>Negara/Tradisi</th>
-                      <th style={tableHeader}>Status</th>
-                      <th style={tableHeader}>Keterangan</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {maxim.internationalComparisons.map((c, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #EAECF0' }}>
-                        <td style={{ ...tableCell, fontWeight: 600, whiteSpace: 'nowrap' }}>{c.country}</td>
-                        <td style={{ ...tableCell, whiteSpace: 'nowrap', color: c.status === 'Dikenal' ? '#3D6B0A' : c.status === 'Tidak Dikenal' ? '#C85A54' : '#AC6600' }}>
-                          {c.status === 'Dikenal' ? '✔ ' : c.status === 'Tidak Dikenal' ? '✘ ' : '◑ '}{c.status}
-                        </td>
-                        <td style={tableCell}>{c.description}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <ResponsiveTable
+                caption="Status pengakuan di berbagai negara"
+                headers={['Negara/Tradisi', 'Status', 'Keterangan']}
+                noWrapCols={[0, 1]}
+                cellStyles={{
+                  0: { fontWeight: 600 },
+                  1: { whiteSpace: 'nowrap' },
+                }}
+                rows={maxim.internationalComparisons.map(c => [
+                  c.country,
+                  <span key={c.country} style={{ color: c.status === 'Dikenal' ? '#3D6B0A' : c.status === 'Tidak Dikenal' ? '#C85A54' : '#AC6600' }}>
+                    {c.status === 'Dikenal' ? '✔ ' : c.status === 'Tidak Dikenal' ? '✘ ' : '◑ '}{c.status}
+                  </span>,
+                  c.description,
+                ])}
+              />
             ) : <SectionPlaceholder />}
 
             {/* ═══════════════════════════════════════ */}
@@ -625,30 +606,19 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
             <h2 id="perbandingan-maksim" style={h2Style}>Perbandingan dengan Maksim Lain</h2>
             <WikiHR />
             {maxim.maximComparisons && maxim.maximComparisons.length > 0 ? (
-              <div style={{ margin: '0.5rem 0 1.25rem', overflowX: 'auto' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.8125rem' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#F8F9FA' }}>
-                      <th style={tableHeader}>Maksim</th>
-                      <th style={tableHeader}>Kapan Digunakan</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {maxim.maximComparisons.map((mc, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #EAECF0', backgroundColor: mc.maximId === maxim.id ? '#F0F4FF' : 'transparent' }}>
-                        <td style={{ ...tableCell, whiteSpace: 'nowrap' }}>
-                          {mc.maximId !== maxim.id ? (
-                            <Link href={`/maksim/${mc.maximId}`} className="wiki-link" style={{ fontStyle: 'italic' }}>{mc.latinPhrase}</Link>
-                          ) : (
-                            <span style={{ fontStyle: 'italic', fontWeight: 700, color: 'var(--navy)' }}>{mc.latinPhrase} ← (halaman ini)</span>
-                          )}
-                        </td>
-                        <td style={tableCell}>{mc.whenUsed}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <ResponsiveTable
+                caption="Perbandingan penggunaan antar maksim"
+                headers={['Maksim', 'Kapan Digunakan']}
+                noWrapCols={[0]}
+                rows={maxim.maximComparisons.map(mc => [
+                  mc.maximId !== maxim.id ? (
+                    <Link key={mc.maximId} href={`/maksim/${mc.maximId}`} className="wiki-link" style={{ fontStyle: 'italic' }}>{mc.latinPhrase}</Link>
+                  ) : (
+                    <span key={mc.maximId} style={{ fontStyle: 'italic', fontWeight: 700, color: 'var(--navy)' }}>{mc.latinPhrase} ← (halaman ini)</span>
+                  ),
+                  mc.whenUsed,
+                ])}
+              />
             ) : <SectionPlaceholder />}
 
             {/* ═══════════════════════════════════════ */}
@@ -955,25 +925,33 @@ export default function MaximDetailClient({ maxim: initialMaxim }: Props) {
           </>
         )}
 
-        {/* ══ TAB: DISKUSI & CATATAN ══ */}
+        {/* ══ TAB: DISKUSI ══ */}
         {activeTab === 'diskusi' && (
           <div style={{ padding: '0.5rem 0' }}>
-            {/* Live Discussion Panel */}
             <DiscussionPanel maximId={maxim.id} latinPhrase={maxim.latinPhrase} />
+          </div>
+        )}
 
-            {/* Divider */}
-            <hr style={{ border: 'none', borderTop: '1px solid #EAECF0', margin: '2rem 0 1.5rem' }} />
-
-            {/* Personal notes section (kept below discussions) */}
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', margin: '0 0 0.75rem', padding: 0, fontSize: '1rem' }}>
-              <MessageSquare size={16} color="var(--navy)" /> Catatan Pribadi
-            </h2>
-            <p style={{ color: '#54595D', fontSize: '0.8125rem', marginBottom: '1rem', lineHeight: 1.5 }}>
-              Catatan ini disimpan secara offline di browser Anda dan tidak dipublikasikan.
-            </p>
+        {/* ══ TAB: CATATAN PRIBADI ══ */}
+        {activeTab === 'catatan' && (
+          <div style={{ padding: '0.5rem 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <MessageSquare size={16} color="var(--navy)" />
+              <h2 style={{ border: 'none', margin: 0, padding: 0, fontSize: '1rem', fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--navy)' }}>
+                Catatan Pribadi
+              </h2>
+            </div>
+            <div style={{ backgroundColor: '#EFF6FF', border: '1px solid #BFDBFE', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.8125rem', color: '#1E40AF' }}>
+              Catatan ini tersimpan secara <strong>offline di browser Anda</strong> dan tidak dipublikasikan ke publik.
+              Gunakan tab <strong>Diskusi</strong> untuk berkomunikasi dengan komunitas.
+            </div>
             <form onSubmit={handleSaveNote}>
-              <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Tulis catatan hukum pribadi Anda di sini..."
-                style={{ width: '100%', height: '150px', padding: '0.75rem', border: '1px solid #A2A9B1', borderRadius: '2px', fontSize: '0.875rem', fontFamily: 'var(--font-body)', outline: 'none', marginBottom: '0.75rem' }} />
+              <textarea
+                value={noteText}
+                onChange={e => setNoteText(e.target.value)}
+                placeholder="Tulis catatan hukum pribadi Anda di sini…"
+                style={{ width: '100%', height: '180px', padding: '0.75rem', border: '1px solid #A2A9B1', borderRadius: '2px', fontSize: '0.875rem', fontFamily: 'var(--font-body)', outline: 'none', marginBottom: '0.75rem', resize: 'vertical' }}
+              />
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <button type="submit" className="btn-primary">Simpan Catatan</button>
                 {noteSaved && <span style={{ color: 'var(--success)', fontSize: '0.8125rem', fontWeight: 600 }}>✓ Catatan disimpan!</span>}
