@@ -78,25 +78,25 @@ const faqGroups = [
 function FAQItem({ question, answer, warning }: { question: string; answer: string; warning?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ borderBottom: '1px solid #EAECF0' }}>
+    <div style={{ borderBottom: '1px solid #F1F5F9' }}>
       <button
         onClick={() => setOpen(o => !o)}
         style={{
           width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between',
-          alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem 0', background: 'none',
+          alignItems: 'center', gap: '0.75rem', padding: '1rem 0', background: 'none',
           border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)',
         }}
         aria-expanded={open}
       >
-        <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#202122', lineHeight: 1.5 }}>
-          {warning && <AlertTriangle size={14} style={{ color: '#AC6600', marginRight: '0.375rem', verticalAlign: 'middle', display: 'inline' }} />}
+        <span style={{ fontWeight: 600, fontSize: '0.9375rem', color: '#0F172A', lineHeight: 1.5 }}>
+          {warning && <AlertTriangle size={15} style={{ color: '#D97706', marginRight: '0.5rem', verticalAlign: 'middle', display: 'inline' }} />}
           {question}
         </span>
-        <ChevronDown size={16} style={{ flexShrink: 0, color: '#72777D', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 200ms', marginTop: '3px' }} />
+        <ChevronDown size={18} style={{ flexShrink: 0, color: '#64748B', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }} />
       </button>
       {open && (
-        <div style={{ paddingBottom: '1rem' }}>
-          <p style={{ fontSize: '0.875rem', lineHeight: 1.75, color: '#54595D', margin: 0 }}>
+        <div style={{ paddingBottom: '1.25rem' }}>
+          <p style={{ fontSize: '0.875rem', lineHeight: 1.75, color: '#475569', margin: 0 }}>
             {answer}
           </p>
         </div>
@@ -120,46 +120,50 @@ export default function FAQPage() {
     <>
       <Header />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div style={{ display: 'flex', minHeight: 'calc(100vh - 46px)' }}>
+      <div style={{ display: 'flex', minHeight: 'calc(100vh - 46px)', backgroundColor: '#F8FAFC' }}>
         <div className="hidden lg:block">
           <Sidebar />
         </div>
-        <main style={{ flex: 1, minWidth: 0, backgroundColor: '#F8F9FA', padding: '2rem' }}>
-          <div style={{ maxWidth: '800px' }}>
+        <main style={{ flex: 1, minWidth: 0, padding: '2rem 1.5rem' }}>
+          <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
 
             {/* Header */}
-            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.5rem 2rem', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.5rem' }}>
-                <HelpCircle size={20} color="#0F1B3C" />
-                <h1 style={{ margin: 0, border: 'none', padding: 0, fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.5rem', color: '#0F1B3C' }}>
-                  Pertanyaan Umum (FAQ)
-                </h1>
+            <div className="page-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.375rem' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <HelpCircle size={20} color="#2563EB" />
+                </div>
+                <h1 style={{ margin: 0 }}>Pertanyaan Umum (FAQ)</h1>
               </div>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#54595D' }}>
+              <p style={{ marginTop: '0.25rem' }}>
                 Jawaban atas pertanyaan paling sering diajukan tentang VeriLex. Lihat juga halaman{' '}
-                <Link href="/penyangkalan" style={{ color: '#0645AD' }}>Penyangkalan</Link> dan{' '}
-                <Link href="/panduan" style={{ color: '#0645AD' }}>Panduan Penggunaan</Link>.
+                <Link href="/penyangkalan" style={{ color: '#2563EB', fontWeight: 600 }}>Penyangkalan</Link> dan{' '}
+                <Link href="/panduan" style={{ color: '#2563EB', fontWeight: 600 }}>Panduan Penggunaan</Link>.
               </p>
             </div>
 
             {/* FAQ Groups */}
-            {faqGroups.map(group => (
-              <div key={group.heading} style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.5rem 2rem', marginBottom: '1rem' }}>
-                <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', color: '#0F1B3C', margin: '0 0 0.75rem', borderBottom: '1px solid #EAECF0', paddingBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  {group.heading}
-                </h2>
-                {group.items.map(item => (
-                  <FAQItem key={item.question} {...item} />
-                ))}
-              </div>
-            ))}
+            <div style={{ display: 'grid', gap: '1.25rem', marginBottom: '1.5rem' }}>
+              {faqGroups.map(group => (
+                <div key={group.heading} className="wiki-card">
+                  <h2 className="wiki-card-header" style={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.875rem', color: '#64748B' }}>
+                    {group.heading}
+                  </h2>
+                  <div>
+                    {group.items.map(item => (
+                      <FAQItem key={item.question} {...item} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-            {/* Link to Penyangkalan */}
-            <div style={{ backgroundColor: '#FFFBEB', border: '1px solid #FDE68A', padding: '1rem 1.25rem' }}>
+            {/* Callout Notice */}
+            <div className="notice-warning">
               <p style={{ margin: 0, fontSize: '0.875rem', color: '#92400E', lineHeight: 1.6 }}>
                 <strong>Penyangkalan resmi platform</strong> — termasuk batas tanggung jawab editorial dan penggunaan konten —
                 tersedia di halaman terpisah.{' '}
-                <Link href="/penyangkalan" style={{ color: '#92400E', fontWeight: 700 }}>
+                <Link href="/penyangkalan" style={{ color: '#92400E', fontWeight: 700, textDecoration: 'underline' }}>
                   Baca Penyangkalan VeriLex →
                 </Link>
               </p>

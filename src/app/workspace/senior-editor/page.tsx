@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Sidebar from '@/components/layout/Sidebar';
-import { Crown, CheckCircle, Users, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Crown, Users, TrendingUp, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useVeriLexStore, hasMinRole } from '@/lib/useStore';
 import { apiFetch } from '@/lib/api-fetch';
 
@@ -39,69 +39,67 @@ export default function SeniorEditorWorkspacePage() {
   return (
     <>
       <Header />
-      <div style={{ display: 'flex', minHeight: 'calc(100vh - 46px)' }}>
+      <div style={{ display: 'flex', minHeight: 'calc(100vh - 46px)', backgroundColor: '#F8FAFC' }}>
         <div className="hidden lg:block"><Sidebar /></div>
-        <main style={{ flex: 1, minWidth: 0, backgroundColor: '#F8F9FA', padding: '2rem' }}>
-          <div style={{ maxWidth: '860px' }}>
+        <main style={{ flex: 1, minWidth: 0, padding: '2rem 1.5rem' }}>
+          <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
 
-            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.5rem 2rem', marginBottom: '1.5rem' }}>
+            <div className="page-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <div style={{ width: '36px', height: '36px', backgroundColor: '#FFFBEB', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Crown size={18} color="#92400E" />
+                <div style={{ width: '40px', height: '40px', backgroundColor: '#FFFBEB', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Crown size={20} color="#D97706" />
                 </div>
                 <div>
-                  <h1 style={{ margin: 0, border: 'none', padding: 0, fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.375rem', color: '#0F1B3C' }}>
-                    Workspace Senior Editor
-                  </h1>
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#54595D' }}>Pantau kualitas konten, eskalasi, dan performa tim editorial.</p>
+                  <h1 style={{ margin: 0 }}>Workspace Senior Editor</h1>
+                  <p style={{ margin: 0 }}>Pantau kualitas konten, eskalasi moderasi, dan performa tim editorial.</p>
                 </div>
               </div>
             </div>
 
-            {/* Stats grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+            {/* Stats Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
               {loading ? (
-                <p style={{ color: '#72777D', fontSize: '0.875rem', gridColumn: '1/-1' }}>Memuat statistik…</p>
+                <div className="skeleton" style={{ height: '100px', gridColumn: '1/-1' }} />
               ) : [
-                { label: 'Total Maksim Aktif', count: stats.total_maxims ?? '—', icon: <TrendingUp size={18} color="#1E40AF" />, bg: '#EFF6FF', color: '#1E40AF' },
-                { label: 'Usulan Pending', count: stats.pending_proposals ?? '—', icon: <AlertTriangle size={18} color="#92400E" />, bg: '#FFFBEB', color: '#92400E' },
-                { label: 'Editor Aktif', count: stats.active_editors ?? '—', icon: <Users size={18} color="#065F46" />, bg: '#ECFDF5', color: '#065F46' },
+                { label: 'Total Maksim Aktif', count: stats.total_maxims ?? '—', icon: <TrendingUp size={20} color="#2563EB" /> },
+                { label: 'Usulan Pending', count: stats.pending_proposals ?? '—', icon: <AlertTriangle size={20} color="#D97706" /> },
+                { label: 'Editor Aktif', count: stats.active_editors ?? '—', icon: <Users size={20} color="#059669" /> },
               ].map(stat => (
-                <div key={stat.label} style={{ backgroundColor: stat.bg, border: `1px solid ${stat.color}30`, padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  {stat.icon}
+                <div key={stat.label} className="wiki-card" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ padding: '0.75rem', borderRadius: '10px', backgroundColor: '#F8FAFC' }}>
+                    {stat.icon}
+                  </div>
                   <div>
-                    <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.5rem', color: stat.color, margin: 0 }}>{stat.count}</p>
-                    <p style={{ fontSize: '0.75rem', color: stat.color, margin: 0 }}>{stat.label}</p>
+                    <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.75rem', color: '#0F172A', margin: 0 }}>{stat.count}</p>
+                    <p style={{ fontSize: '0.8125rem', color: '#64748B', margin: 0, fontWeight: 500 }}>{stat.label}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Quick Actions */}
-            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.5rem 2rem', marginBottom: '1rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '1rem', color: '#0F1B3C', margin: '0 0 1rem', border: 'none', padding: 0 }}>
-                Akses Cepat
-              </h2>
+            <div className="wiki-card" style={{ marginBottom: '1.5rem' }}>
+              <h2 className="wiki-card-header">Akses Cepat Pengelolaan</h2>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                 {[
-                  { label: 'Antrian Review Editor', href: '/workspace/editor', color: '#065F46' },
-                  { label: 'Panel Admin', href: '/admin', color: '#991B1B' },
-                  { label: 'Dashboard Reviewer', href: '/reviewer', color: '#92400E' },
-                  { label: 'Semua Maksim', href: '/cari', color: '#0645AD' },
+                  { label: 'Antrian Review Editor', href: '/workspace/editor', color: '#059669', bg: '#ECFDF5', border: '#DCFCE7' },
+                  { label: 'Panel Admin Utama', href: '/admin', color: '#DC2626', bg: '#FEF2F2', border: '#FEE2E2' },
+                  { label: 'Dashboard Reviewer', href: '/reviewer', color: '#D97706', bg: '#FFFBEB', border: '#FEF3C7' },
+                  { label: 'Jelajahi Maksim', href: '/cari', color: '#2563EB', bg: '#EFF6FF', border: '#DBEAFE' },
                 ].map(action => (
                   <Link key={action.href} href={action.href}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '0.5rem 1rem', border: `1px solid ${action.color}40`, color: action.color, fontWeight: 600, fontSize: '0.8125rem', textDecoration: 'none', backgroundColor: `${action.color}08` }}>
-                    {action.label} →
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '0.625rem 1.125rem', borderRadius: '8px', border: `1px solid ${action.border}`, color: action.color, fontWeight: 600, fontSize: '0.84375rem', textDecoration: 'none', backgroundColor: action.bg }}>
+                    {action.label} <ArrowRight size={14} />
                   </Link>
                 ))}
               </div>
             </div>
 
-            {/* Konten Prioritas */}
-            <div style={{ backgroundColor: '#FFFBEB', border: '1px solid #FDE68A', padding: '1.25rem 1.5rem' }}>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#92400E' }}>
-                <strong>Catatan:</strong> Sebagai Senior Editor, Anda memiliki akses ke semua fitur Editor ditambah kemampuan
-                mengelola tim dan menetapkan prioritas konten. Gunakan <Link href="/admin" style={{ color: '#92400E', fontWeight: 700 }}>Admin Panel</Link> untuk manajemen pengguna yang lebih lanjut.
+            {/* Notice */}
+            <div className="notice-warning">
+              <p style={{ margin: 0, fontSize: '0.875rem' }}>
+                <strong>Catatan Senior Editor:</strong> Anda memiliki wewenang mengendalikan penetapan prioritas konten dan eskalasi moderasi.
+                Gunakan <Link href="/admin" style={{ color: '#92400E', fontWeight: 700, textDecoration: 'underline' }}>Panel Admin Utama</Link> untuk manajemen akun pengguna secara menyeluruh.
               </p>
             </div>
 

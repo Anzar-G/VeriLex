@@ -6,6 +6,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get('q') ?? '').trim().replace(/[,%()]/g, '');
   const fields = (searchParams.get('fields') ?? '').split(',').filter(Boolean);
+  const ids = (searchParams.get('ids') ?? '').split(',').filter(Boolean).slice(0, 100);
   const sort = searchParams.get('sort') === 'alpha' ? 'latin_phrase' : 'updated_at';
   const page = Math.max(1, Number(searchParams.get('page') ?? 1));
   const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit') ?? 24)));
@@ -27,6 +28,7 @@ export async function GET(req: Request) {
     .range(offset, offset + limit - 1);
 
   if (stableOnly) query = query.in('status', ['stable', 'featured']);
+  if (ids.length) query = query.in('id', ids);
   if (fields.length) query = query.overlaps('legal_fields', fields);
   if (q) query = query.or(`latin_phrase.ilike.%${q}%,indonesian_meaning.ilike.%${q}%,legal_meaning.ilike.%${q}%`);
   if (initial) query = query.ilike('latin_phrase', `${initial}%`);

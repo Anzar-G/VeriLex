@@ -12,7 +12,8 @@ export const metadata: Metadata = {
 
 const steps = [
   {
-    icon: <Search size={22} color="#0F1B3C" />,
+    icon: <Search size={22} color="#2563EB" />,
+    bg: '#EFF6FF',
     num: '1',
     title: 'Menggunakan Indeks & Pencarian',
     desc: (
@@ -23,8 +24,8 @@ const steps = [
         </p>
         <ul>
           <li>Memfilter berdasarkan <strong>bidang hukum</strong> melalui sidebar kiri (11 kategori tersedia)</li>
-          <li>Menelusuri secara alfabetis via <Link href="/indeks">Indeks A–Z</Link></li>
-          <li>Menjelajahi per kategori via <Link href="/kategori">Kategori Hukum</Link></li>
+          <li>Menelusuri secara alfabetis via <Link href="/indeks" style={{ color: '#2563EB', fontWeight: 600 }}>Indeks A–Z</Link></li>
+          <li>Menjelajahi per kategori via <Link href="/kategori" style={{ color: '#2563EB', fontWeight: 600 }}>Kategori Hukum</Link></li>
         </ul>
         <p>
           Setiap hasil pencarian menampilkan frase Latin, terjemahan singkat, dan bidang hukum terkait.
@@ -34,13 +35,14 @@ const steps = [
     ),
   },
   {
-    icon: <BookMarked size={22} color="#0F1B3C" />,
+    icon: <BookMarked size={22} color="#059669" />,
+    bg: '#ECFDF5',
     num: '2',
     title: 'Memanfaatkan Spaced Repetition Flashcard',
     desc: (
       <>
         <p>
-          Modul <Link href="/flashcard">Flashcard</Link> menggunakan simulasi algoritma <em>Spaced Repetition (SRA)</em> —
+          Modul <Link href="/flashcard" style={{ color: '#2563EB', fontWeight: 600 }}>Flashcard</Link> menggunakan simulasi algoritma <em>Spaced Repetition (SRA)</em> —
           metode belajar berbasis neurosains yang membantu memindahkan informasi dari memori jangka pendek ke jangka panjang.
         </p>
         <ul>
@@ -53,13 +55,14 @@ const steps = [
     ),
   },
   {
-    icon: <HelpCircle size={22} color="#0F1B3C" />,
+    icon: <HelpCircle size={22} color="#D97706" />,
+    bg: '#FFFBEB',
     num: '3',
     title: 'Quiz Interaktif',
     desc: (
       <>
         <p>
-          <Link href="/quiz">Quiz</Link> menyajikan 5 soal pilihan ganda berbasis kasus konkret dan asas hukum.
+          <Link href="/quiz" style={{ color: '#2563EB', fontWeight: 600 }}>Quiz</Link> menyajikan 5 soal pilihan ganda berbasis kasus konkret dan asas hukum.
           Setiap sesi menggunakan soal acak dari bank soal yang terus bertambah.
         </p>
         <ul>
@@ -71,7 +74,8 @@ const steps = [
     ),
   },
   {
-    icon: <Star size={22} color="#0F1B3C" />,
+    icon: <Star size={22} color="#7C3AED" />,
+    bg: '#F5F3FF',
     num: '4',
     title: 'Menyimpan Maksim Favorit',
     desc: (
@@ -81,7 +85,7 @@ const steps = [
           menyimpan maksim ke pustaka pribadi Anda.
         </p>
         <ul>
-          <li>Semua favorit dapat diakses di halaman <Link href="/favorit">Favorit Saya</Link></li>
+          <li>Semua favorit dapat diakses di halaman <Link href="/favorit" style={{ color: '#2563EB', fontWeight: 600 }}>Favorit Saya</Link></li>
           <li>Pengguna login: favorit tersinkronisasi ke cloud</li>
           <li>Pengguna tamu: favorit disimpan lokal di browser</li>
           <li>Tambahkan <strong>catatan pribadi</strong> pada setiap maksim yang difavoritkan</li>
@@ -90,7 +94,8 @@ const steps = [
     ),
   },
   {
-    icon: <BookOpen size={22} color="#0F1B3C" />,
+    icon: <BookOpen size={22} color="#2563EB" />,
+    bg: '#EFF6FF',
     num: '5',
     title: 'Membaca Artikel Maksim Lengkap',
     desc: (
@@ -113,7 +118,8 @@ const steps = [
     ),
   },
   {
-    icon: <Users size={22} color="#0F1B3C" />,
+    icon: <Users size={22} color="#059669" />,
+    bg: '#ECFDF5',
     num: '6',
     title: 'Diskusi & Catatan Pribadi',
     desc: (
@@ -130,18 +136,19 @@ const steps = [
     ),
   },
   {
-    icon: <Shield size={22} color="#0F1B3C" />,
+    icon: <Shield size={22} color="#DC2626" />,
+    bg: '#FEF2F2',
     num: '7',
     title: 'Hak & Kewenangan per Role',
     desc: (
       <>
         <p>VeriLex menggunakan sistem <em>role-based access</em>. Setiap akun memiliki role yang menentukan apa yang dapat dilakukan:</p>
-        <div style={{ overflowX: 'auto', marginTop: '0.75rem' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem' }}>
+        <div className="data-table-container" style={{ marginTop: '0.875rem' }}>
+          <table className="data-table">
             <thead>
-              <tr style={{ backgroundColor: '#F8F9FA' }}>
-                <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', border: '1px solid #EAECF0', fontWeight: 700 }}>Role</th>
-                <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', border: '1px solid #EAECF0', fontWeight: 700 }}>Kewenangan</th>
+              <tr>
+                <th>Role</th>
+                <th>Kewenangan Operasional</th>
               </tr>
             </thead>
             <tbody>
@@ -154,15 +161,15 @@ const steps = [
                 ['Administrator', 'Akses penuh termasuk manajemen pengguna'],
               ].map(([role, kw]) => (
                 <tr key={role}>
-                  <td style={{ padding: '0.5rem 0.75rem', border: '1px solid #EAECF0', fontWeight: 600, color: '#0F1B3C' }}>{role}</td>
-                  <td style={{ padding: '0.5rem 0.75rem', border: '1px solid #EAECF0', color: '#54595D' }}>{kw}</td>
+                  <td style={{ fontWeight: 600, color: '#0F172A' }}>{role}</td>
+                  <td style={{ color: '#475569' }}>{kw}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p style={{ marginTop: '0.75rem' }}>
-          Untuk mengajukan peningkatan role, buka halaman <Link href="/profil">Profil</Link> setelah login.
+        <p style={{ marginTop: '0.875rem' }}>
+          Untuk mengajukan peningkatan role, buka halaman <Link href="/profil" style={{ color: '#2563EB', fontWeight: 600 }}>Profil</Link> setelah login.
         </p>
       </>
     ),
@@ -173,63 +180,68 @@ export default function PanduanPage() {
   return (
     <>
       <Header />
-      <div style={{ display: 'flex', minHeight: 'calc(100vh - 46px)' }}>
+      <div style={{ display: 'flex', minHeight: 'calc(100vh - 46px)', backgroundColor: '#F8FAFC' }}>
         <div className="hidden lg:block">
           <Sidebar />
         </div>
-        <main style={{ flex: 1, minWidth: 0, backgroundColor: '#F8F9FA', padding: '2rem' }}>
-          <div style={{ maxWidth: '800px' }}>
+        <main style={{ flex: 1, minWidth: 0, padding: '2rem 1.5rem' }}>
+          <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
 
             {/* Header */}
-            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.5rem 2rem', marginBottom: '1.5rem' }}>
-              <h1 style={{ margin: '0 0 0.375rem', border: 'none', padding: 0, fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.5rem', color: '#0F1B3C' }}>
-                Panduan Penggunaan Platform
-              </h1>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#54595D' }}>
+            <div className="page-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.375rem' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <BookOpen size={20} color="#2563EB" />
+                </div>
+                <h1 style={{ margin: 0 }}>Panduan Penggunaan Platform</h1>
+              </div>
+              <p style={{ marginTop: '0.25rem' }}>
                 Panduan lengkap menggunakan semua fitur VeriLex — dari pencarian hingga kontribusi editorial.
-                Lihat juga <Link href="/faq" style={{ color: '#0645AD' }}>FAQ</Link> untuk pertanyaan umum.
+                Lihat juga <Link href="/faq" style={{ color: '#2563EB', fontWeight: 600 }}>FAQ</Link> untuk pertanyaan umum.
               </p>
             </div>
 
-            {/* Quick nav */}
-            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1rem 1.5rem', marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.75rem', color: '#72777D', fontWeight: 600, alignSelf: 'center', marginRight: '0.25rem' }}>Langsung ke:</span>
+            {/* Quick Nav Pills */}
+            <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '1rem 1.25rem', marginBottom: '1.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', boxShadow: '0 4px 15px -2px rgba(15, 23, 42, 0.03)' }}>
+              <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600, alignSelf: 'center', marginRight: '0.25rem' }}>Langsung ke:</span>
               {steps.map(s => (
-                <a key={s.num} href={`#step-${s.num}`} style={{ fontSize: '0.75rem', color: '#0645AD', padding: '0.25rem 0.5rem', border: '1px solid #EAECF0', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                <a key={s.num} href={`#step-${s.num}`} style={{ fontSize: '0.75rem', color: '#2563EB', padding: '0.375rem 0.75rem', borderRadius: '9999px', backgroundColor: '#EFF6FF', border: '1px solid #DBEAFE', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: 500 }}>
                   <span style={{ fontWeight: 700 }}>{s.num}.</span> {s.title.split(' ').slice(0, 2).join(' ')}…
                 </a>
               ))}
             </div>
 
-            {/* Steps */}
-            {steps.map(step => (
-              <div key={step.num} id={`step-${step.num}`} style={{ backgroundColor: '#FFFFFF', border: '1px solid #A2A9B1', padding: '1.5rem 2rem', marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-                  <div style={{ flexShrink: 0 }}>
-                    <div style={{ width: '44px', height: '44px', backgroundColor: '#EAF3FF', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {step.icon}
+            {/* Steps List */}
+            <div style={{ display: 'grid', gap: '1.25rem', marginBottom: '1.5rem' }}>
+              {steps.map(step => (
+                <div key={step.num} id={`step-${step.num}`} className="wiki-card">
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem' }}>
+                    <div style={{ flexShrink: 0 }}>
+                      <div style={{ width: '48px', height: '48px', backgroundColor: step.bg, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {step.icon}
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <h2 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '1rem', color: '#0F1B3C', margin: '0 0 0.75rem', border: 'none', padding: 0 }}>
-                      <span style={{ color: '#A2A9B1', marginRight: '0.5rem' }}>{step.num}.</span>
-                      {step.title}
-                    </h2>
-                    <div style={{ fontSize: '0.875rem', lineHeight: 1.75, color: '#54595D' }}>
-                      {step.desc}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h2 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '1.0625rem', color: '#0F172A', margin: '0 0 0.75rem', border: 'none', padding: 0 }}>
+                        <span style={{ color: '#94A3B8', marginRight: '0.5rem' }}>{step.num}.</span>
+                        {step.title}
+                      </h2>
+                      <div style={{ fontSize: '0.875rem', lineHeight: 1.75, color: '#475569' }}>
+                        {step.desc}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
 
-            {/* CTA */}
-            <div style={{ backgroundColor: '#F8F9FA', border: '1px solid #A2A9B1', padding: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#54595D' }}>
-                Masih ada pertanyaan? Cek halaman FAQ atau hubungi komunitas.
+            {/* Footer CTA */}
+            <div className="notice-info" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem' }}>
+                Masih ada pertanyaan tentang fitur platform? Pelajari pertanyaan paling sering diajukan.
               </p>
-              <Link href="/faq" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', color: '#0645AD', fontWeight: 700, fontSize: '0.875rem', textDecoration: 'none' }}>
-                Lihat FAQ <ChevronRight size={14} />
+              <Link href="/faq" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', color: '#0369A1', fontWeight: 700, fontSize: '0.875rem', textDecoration: 'none' }}>
+                Buka FAQ <ChevronRight size={15} />
               </Link>
             </div>
 

@@ -714,39 +714,56 @@ p {
 }
 
 /* ══════════════════════════════════════════════════════════
-   P2-5 DESIGN SYSTEM — Wiki Card, Data Table, Status Badges
+   P2-5 DESIGN SYSTEM — Modern Premium Legal Tech Aesthetics
    ══════════════════════════════════════════════════════════ */
 
-/* ── Wiki Card ─────────────────────────────────────────── */
-.wiki-card {
-  background-color: #FFFFFF;
-  border: 1px solid #A2A9B1;
-  padding: 1.5rem 2rem;
+/* ── Centered Container Wrapper ────────────────────────── */
+.main-content-wrapper {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  width: 100%;
 }
 
-.wiki-card + .wiki-card { margin-top: 1rem; }
+/* ── Modern Premium Card ───────────────────────────────── */
+.wiki-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  transition: all 200ms ease;
+}
+
+.wiki-card + .wiki-card { margin-top: 1.25rem; }
+
+.wiki-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: #CBD5E1;
+  box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+}
 
 .wiki-card-header {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1rem;
-  color: #0F1B3C;
-  border-bottom: 1px solid #EAECF0;
-  padding-bottom: 0.5rem;
+  font-size: 1.125rem;
+  color: #0F172A;
+  border-bottom: 1px solid #F1F5F9;
+  padding-bottom: 0.75rem;
   margin: 0 0 1rem;
 }
 
 .wiki-card-body {
   font-family: var(--font-body);
   font-size: 0.875rem;
-  color: var(--steel);
+  color: #475569;
   line-height: 1.7;
 }
 
 .wiki-card-footer {
-  border-top: 1px solid #EAECF0;
-  padding-top: 0.75rem;
-  margin-top: 1rem;
+  border-top: 1px solid #F1F5F9;
+  padding-top: 0.875rem;
+  margin-top: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -754,67 +771,78 @@ p {
   gap: 0.5rem;
 }
 
-/* ── Data Table ────────────────────────────────────────── */
+/* ── Modern Data Table ─────────────────────────────────── */
+.data-table-container {
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-body);
   font-size: 0.8125rem;
-  color: var(--steel);
+  color: #334155;
 }
 
 .data-table th {
-  background-color: #F8F9FA;
-  font-weight: 700;
+  background-color: #F8FAFC;
+  font-weight: 600;
   text-align: left;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #EAECF0;
-  color: var(--steel-muted);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #E2E8F0;
+  color: #475569;
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   white-space: nowrap;
 }
 
 .data-table td {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #EAECF0;
-  vertical-align: top;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #F1F5F9;
+  vertical-align: middle;
   line-height: 1.5;
 }
 
-.data-table tr:hover td { background-color: #FAFBFC; }
+.data-table tr:last-child td { border-bottom: none; }
+
+.data-table tr:hover td { background-color: #F8FAFC; }
 
 .data-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-/* ── Status Badges ─────────────────────────────────────── */
+/* ── Modern Status Badges & Pills ──────────────────────── */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.125rem 0.5rem;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
   font-family: var(--font-body);
   font-size: 0.75rem;
   font-weight: 600;
   border: 1px solid;
-  border-radius: 2px;
+  border-radius: 9999px;
   white-space: nowrap;
 }
 
-.badge-success  { background: #F0FDF4; color: #166534; border-color: #86EFAC; }
-.badge-error    { background: #FEF2F2; color: #991B1B; border-color: #FECACA; }
-.badge-warning  { background: #FFFBEB; color: #92400E; border-color: #FDE68A; }
-.badge-info     { background: #EFF6FF; color: #1E40AF; border-color: #BFDBFE; }
-.badge-neutral  { background: #F8F9FA; color: #54595D; border-color: #A2A9B1; }
-.badge-purple   { background: #FDF4FF; color: #6B21A8; border-color: #E9D5FF; }
-.badge-navy     { background: #EAF3FF; color: #0F1B3C; border-color: #BFDBFE; }
+.badge-success  { background: #F0FDF4; color: #15803D; border-color: #DCFCE7; }
+.badge-error    { background: #FEF2F2; color: #B91C1C; border-color: #FEE2E2; }
+.badge-warning  { background: #FFFBEB; color: #B45309; border-color: #FEF3C7; }
+.badge-info     { background: #EFF6FF; color: #1D4ED8; border-color: #DBEAFE; }
+.badge-neutral  { background: #F8FAFC; color: #475569; border-color: #E2E8F0; }
+.badge-purple   { background: #FAF5FF; color: #7E22CE; border-color: #F3E8FF; }
+.badge-navy     { background: #F0F7FF; color: #0F172A; border-color: #BAE6FD; }
 
-/* ── Page Header (shared pattern) ─────────────────────── */
+/* ── Page Header Banner ────────────────────────────────── */
 .page-header {
   background-color: #FFFFFF;
-  border: 1px solid #A2A9B1;
-  padding: 1.5rem 2rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
   margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
 }
 
 .page-header h1 {
@@ -823,31 +851,32 @@ p {
   margin: 0 0 0.375rem;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.5rem;
-  color: #0F1B3C;
+  font-size: 1.625rem;
+  color: #0F172A;
+  letter-spacing: -0.01em;
 }
 
-.page-header p { margin: 0; font-size: 0.875rem; color: #54595D; }
+.page-header p { margin: 0; font-size: 0.875rem; color: #64748B; lineHeight: 1.6; }
 
-/* ── Section notices ───────────────────────────────────── */
-.notice-info    { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; padding: 1rem 1.25rem; font-size: 0.875rem; line-height: 1.6; }
-.notice-warning { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; padding: 1rem 1.25rem; font-size: 0.875rem; line-height: 1.6; }
-.notice-error   { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; padding: 1rem 1.25rem; font-size: 0.875rem; line-height: 1.6; }
-.notice-success { background: #F0FDF4; border: 1px solid #86EFAC; color: #166534; padding: 1rem 1.25rem; font-size: 0.875rem; line-height: 1.6; }
+/* ── Section Notice Callouts ───────────────────────────── */
+.notice-info    { background: #F0F7FF; border: 1px solid #BAE6FD; color: #0369A1; padding: 1.125rem 1.375rem; border-radius: 10px; font-size: 0.875rem; line-height: 1.6; }
+.notice-warning { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; padding: 1.125rem 1.375rem; border-radius: 10px; font-size: 0.875rem; line-height: 1.6; }
+.notice-error   { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; padding: 1.125rem 1.375rem; border-radius: 10px; font-size: 0.875rem; line-height: 1.6; }
+.notice-success { background: #F0FDF4; border: 1px solid #86EFAC; color: #166534; padding: 1.125rem 1.375rem; border-radius: 10px; font-size: 0.875rem; line-height: 1.6; }
 
 /* ── Skeleton loader ───────────────────────────────────── */
 .skeleton {
-  background: linear-gradient(90deg, #eaecf0 25%, #f8f9fa 50%, #eaecf0 75%);
+  background: linear-gradient(90deg, #f1f5f9 25%, #f8fafc 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: verilex-skeleton 1.25s ease-in-out infinite;
-  border-radius: 2px;
+  border-radius: 6px;
 }
 
-/* ── P1-4: Mobile TOC — single column, collapsed by default ── */
+/* ── Mobile TOC ────────────────────────────────────────── */
 @media (max-width: 767px) {
   .wiki-toc ol { columns: 1 !important; }
   .wiki-toc { min-width: 0; }
-  /* Auto-collapse TOC on mobile */
   .wiki-toc:not(.toc-mobile-expanded) ol { display: none; }
 }
+
 
